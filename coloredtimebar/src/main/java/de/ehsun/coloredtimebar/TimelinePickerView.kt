@@ -188,8 +188,10 @@ class TimelinePickerView @JvmOverloads constructor(
                 }
             }
         } else {
+            // crash fix
             correctValue =
-                availableRanges.find { it.contains(handleLeftPos) }!!.endInclusive.toMinutes()
+                availableRanges.find { it.contains(handleLeftPos) }?.endInclusive?.toMinutes()
+                    ?: return
         }
 
         handleRightPos = correctValue
