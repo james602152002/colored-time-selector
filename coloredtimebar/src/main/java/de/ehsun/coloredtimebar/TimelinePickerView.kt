@@ -8,11 +8,12 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.MotionEvent
 
-class TimelinePickerView @JvmOverloads constructor(context: Context,
-                                                   attrs: AttributeSet? = null,
-                                                   defStyleAttr: Int = 0,
-                                                   defStyleRes: Int = 0)
-    : TimelineView(context, attrs, defStyleAttr, defStyleRes) {
+class TimelinePickerView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+    defStyleRes: Int = 0
+) : TimelineView(context, attrs, defStyleAttr, defStyleRes) {
 
     var pickerDrawable: Drawable = context.getDrawableCompat(R.drawable.ic_navigation_black_24dp)
     var stepSize: Int = 1
@@ -28,8 +29,10 @@ class TimelinePickerView @JvmOverloads constructor(context: Context,
 
     init {
         attrs?.let {
-            val typedArray = context.obtainStyledAttributes(it, R.styleable.TimelinePickerView, 0, 0)
-            pickerDrawable = typedArray.getDrawable(R.styleable.TimelinePickerView_pickerDrawable) ?: pickerDrawable
+            val typedArray =
+                context.obtainStyledAttributes(it, R.styleable.TimelinePickerView, 0, 0)
+            pickerDrawable = typedArray.getDrawable(R.styleable.TimelinePickerView_pickerDrawable)
+                ?: pickerDrawable
             stepSize = typedArray.getInt(R.styleable.TimelinePickerView_stepSize, stepSize)
             minSelectableTimeRange = stepSize
             typedArray.recycle()
@@ -39,11 +42,12 @@ class TimelinePickerView @JvmOverloads constructor(context: Context,
     override fun setAvailableTimeRange(availableTimeRanges: List<String>) {
         super.setAvailableTimeRange(availableTimeRanges)
         availableRanges.firstOrNull { (start, end) -> end.toMinutes() - start.toMinutes() >= minSelectableTimeRange }
-                ?.let { (start, _) ->
-                    handleLeftPos = start.toMinutes()
-                    handleRightPos = handleLeftPos + minSelectableTimeRange
-                    highlightRange = SimpleTime.fromMinutes(handleLeftPos)..SimpleTime.fromMinutes(handleRightPos)
-                }
+            ?.let { (start, _) ->
+                handleLeftPos = start.toMinutes()
+                handleRightPos = handleLeftPos + minSelectableTimeRange
+                highlightRange =
+                    SimpleTime.fromMinutes(handleLeftPos)..SimpleTime.fromMinutes(handleRightPos)
+            }
     }
 
     fun setOnSelectedTimeRangeChangedListener(callback: (from: SimpleTime, to: SimpleTime) -> Unit) {
@@ -60,7 +64,8 @@ class TimelinePickerView @JvmOverloads constructor(context: Context,
                 x <= mainBarRange.start -> timeRange.start.toMinutes()
                 x >= mainBarRange.endInclusive -> timeRange.endInclusive.toMinutes()
                 else -> {
-                    val k = (x - mainBarRange.start) / (mainBarRange.endInclusive - mainBarRange.start)
+                    val k =
+                        (x - mainBarRange.start) / (mainBarRange.endInclusive - mainBarRange.start)
                     (timeRange.start.toMinutes() + k * (timeRange.endInclusive - timeRange.start).toMinutes()).toInt()
                 }
             }
@@ -74,27 +79,42 @@ class TimelinePickerView @JvmOverloads constructor(context: Context,
     }
 
     private fun Canvas.drawHandles(range: IntRange) {
-        val timeRange = SimpleTime.fromMinutes(range.start)..SimpleTime.fromMinutes(range.endInclusive)
+        val timeRange =
+            SimpleTime.fromMinutes(range.start)..SimpleTime.fromMinutes(range.endInclusive)
         timeRangeToRect.invoke(timeRange)
-                .let { rect ->
-                    val handle1Left = (rect.left - (pickerDrawable.intrinsicWidth / 2f)).toInt()
-                    val handle2Left = (rect.right - (pickerDrawable.intrinsicWidth / 2f)).toInt()
-                    val drawableWidth = pickerDrawable.intrinsicWidth
-                    val drawableHeight = pickerDrawable.intrinsicHeight
-                    listOf(
-                            Rect(handle1Left, rect.bottom.toInt(), handle1Left + drawableWidth, rect.bottom.toInt() + drawableHeight),
-                            Rect(handle2Left, rect.bottom.toInt(), handle2Left + drawableWidth, rect.bottom.toInt() + drawableHeight)
+            .let { rect ->
+                val handle1Left = (rect.left - (pickerDrawable.intrinsicWidth / 2f)).toInt()
+                val handle2Left = (rect.right - (pickerDrawable.intrinsicWidth / 2f)).toInt()
+                val drawableWidth = pickerDrawable.intrinsicWidth
+                val drawableHeight = pickerDrawable.intrinsicHeight
+                listOf(
+                    Rect(
+                        handle1Left,
+                        rect.bottom.toInt(),
+                        handle1Left + drawableWidth,
+                        rect.bottom.toInt() + drawableHeight
+                    ),
+                    Rect(
+                        handle2Left,
+                        rect.bottom.toInt(),
+                        handle2Left + drawableWidth,
+                        rect.bottom.toInt() + drawableHeight
                     )
-                }
-                .forEach {
-                    pickerDrawable.bounds = it
-                    pickerDrawable.draw(this)
-                }
+                )
+            }
+            .forEach {
+                pickerDrawable.bounds = it
+                pickerDrawable.draw(this)
+            }
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         super.onTouchEvent(event)
+        //fix crash
+        if (availableRanges.isEmpty()) {
+            return onTouchEvent(event)
+        }
         return when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 val pos = xToPosConverter(event.x)
@@ -137,7 +157,8 @@ class TimelinePickerView @JvmOverloads constructor(context: Context,
                 if (leftAvailableRange.endInclusive.toMinutes() - correctValue >= minSelectableTimeRange) {
                     handleRightPos = leftAvailableRange.endInclusive.toMinutes()
                 } else {
-                    correctValue = availableRanges.find { it.contains(handleRightPos) }!!.start.toMinutes()
+                    correctValue =
+                        availableRanges.find { it.contains(handleRightPos) }!!.start.toMinutes()
                 }
             }
         } else {
@@ -145,7 +166,8 @@ class TimelinePickerView @JvmOverloads constructor(context: Context,
         }
 
         handleLeftPos = correctValue
-        highlightRange = SimpleTime.fromMinutes(handleLeftPos)..SimpleTime.fromMinutes(handleRightPos)
+        highlightRange =
+            SimpleTime.fromMinutes(handleLeftPos)..SimpleTime.fromMinutes(handleRightPos)
         highlightRange?.let { onSelectedTimeRangeChanged?.invoke(it.start, it.endInclusive) }
     }
 
@@ -161,21 +183,25 @@ class TimelinePickerView @JvmOverloads constructor(context: Context,
                 if (correctValue - rightAvailableRange.start.toMinutes() >= minSelectableTimeRange) {
                     handleLeftPos = rightAvailableRange.start.toMinutes()
                 } else {
-                    correctValue = availableRanges.find { it.contains(handleLeftPos) }!!.endInclusive.toMinutes()
+                    correctValue =
+                        availableRanges.find { it.contains(handleLeftPos) }!!.endInclusive.toMinutes()
                 }
             }
         } else {
-            correctValue = availableRanges.find { it.contains(handleLeftPos) }!!.endInclusive.toMinutes()
+            correctValue =
+                availableRanges.find { it.contains(handleLeftPos) }!!.endInclusive.toMinutes()
         }
 
         handleRightPos = correctValue
-        highlightRange = SimpleTime.fromMinutes(handleLeftPos)..SimpleTime.fromMinutes(handleRightPos)
+        highlightRange =
+            SimpleTime.fromMinutes(handleLeftPos)..SimpleTime.fromMinutes(handleRightPos)
         highlightRange?.let { onSelectedTimeRangeChanged?.invoke(it.start, it.endInclusive) }
     }
 
     private fun roundPosByStep(pos: Int) = (pos / stepSize) * stepSize
 
-    private fun ClosedRange<SimpleTime>.contains(value: Int) = start.toMinutes() <= value && value <= endInclusive.toMinutes()
+    private fun ClosedRange<SimpleTime>.contains(value: Int) =
+        start.toMinutes() <= value && value <= endInclusive.toMinutes()
 
     private enum class TimelineHandle { LEFT, RIGHT }
 }
