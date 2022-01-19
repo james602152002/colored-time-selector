@@ -113,7 +113,7 @@ class TimelinePickerView @JvmOverloads constructor(
         super.onTouchEvent(event)
         //fix crash
         if (availableRanges.isEmpty()) {
-            return onTouchEvent(event)
+            return true
         }
         return when (event.action) {
             MotionEvent.ACTION_DOWN -> {
