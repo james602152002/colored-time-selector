@@ -71,7 +71,7 @@ open class TimelineView @JvmOverloads constructor(context: Context,
         availableRanges = availableTimeRanges.mapNotNull { parseTimeRange(it) }
     }
 
-    fun setHighlightTimeRange(timeRange: String) {
+    open fun setHighlightTimeRange(timeRange: String) {
         highlightRange = parseTimeRange(timeRange)
     }
 

@@ -50,6 +50,11 @@ class TimelinePickerView @JvmOverloads constructor(
             }
     }
 
+    override fun setHighlightTimeRange(timeRange: String) {
+        super.setHighlightTimeRange(timeRange)
+        highlightRange?.let { onSelectedTimeRangeChanged?.invoke(it.start, it.endInclusive) }
+    }
+
     fun setOnSelectedTimeRangeChangedListener(callback: (from: SimpleTime, to: SimpleTime) -> Unit) {
         this.onSelectedTimeRangeChanged = callback
     }
@@ -79,14 +84,18 @@ class TimelinePickerView @JvmOverloads constructor(
     }
 
     private fun Canvas.drawHandles(range: IntRange) {
-        val timeRange =
-            SimpleTime.fromMinutes(range.start)..SimpleTime.fromMinutes(range.endInclusive)
+//        val timeRange =
+//            SimpleTime.fromMinutes(range.start)..SimpleTime.fromMinutes(range.endInclusive)
+        val timeRange = (highlightRange?.start
+            ?: SimpleTime.fromMinutes(range.start))..(highlightRange?.endInclusive
+            ?: SimpleTime.fromMinutes(range.endInclusive))
         timeRangeToRect.invoke(timeRange)
             .let { rect ->
                 val handle1Left = (rect.left - (pickerDrawable.intrinsicWidth / 2f)).toInt()
                 val handle2Left = (rect.right - (pickerDrawable.intrinsicWidth / 2f)).toInt()
                 val drawableWidth = pickerDrawable.intrinsicWidth
                 val drawableHeight = pickerDrawable.intrinsicHeight
+
                 listOf(
                     Rect(
                         handle1Left,
