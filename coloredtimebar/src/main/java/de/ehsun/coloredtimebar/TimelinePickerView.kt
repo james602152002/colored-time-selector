@@ -53,6 +53,8 @@ class TimelinePickerView @JvmOverloads constructor(
     override fun setHighlightTimeRange(timeRange: String) {
         super.setHighlightTimeRange(timeRange)
         highlightRange?.let { onSelectedTimeRangeChanged?.invoke(it.start, it.endInclusive) }
+        highlightRange?.start?.toMinutes()?.let { handleLeftPos = it }
+        highlightRange?.endInclusive?.toMinutes()?.let { handleRightPos = it }
     }
 
     fun setOnSelectedTimeRangeChangedListener(callback: (from: SimpleTime, to: SimpleTime) -> Unit) {
