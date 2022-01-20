@@ -88,9 +88,14 @@ class TimelinePickerView @JvmOverloads constructor(
     private fun Canvas.drawHandles(range: IntRange) {
 //        val timeRange =
 //            SimpleTime.fromMinutes(range.start)..SimpleTime.fromMinutes(range.endInclusive)
-        val timeRange = (highlightRange?.start
-            ?: SimpleTime.fromMinutes(range.start))..(highlightRange?.endInclusive
-            ?: SimpleTime.fromMinutes(range.endInclusive))
+//        val timeRange = (highlightRange?.start
+//            ?: SimpleTime.fromMinutes(range.start))..(highlightRange?.endInclusive
+//            ?: SimpleTime.fromMinutes(range.endInclusive))
+        //drawPicker if has highlight
+        highlightRange ?: return
+
+        val timeRange = highlightRange!!.start..highlightRange!!.endInclusive
+
         timeRangeToRect.invoke(timeRange)
             .let { rect ->
                 val handle1Left = (rect.left - (pickerDrawable.intrinsicWidth / 2f)).toInt()
