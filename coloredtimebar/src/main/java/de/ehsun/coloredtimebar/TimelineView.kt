@@ -8,13 +8,19 @@ import android.view.View
 import java.text.SimpleDateFormat
 import java.util.*
 
-open class TimelineView @JvmOverloads constructor(context: Context,
-                                                  attrs: AttributeSet? = null,
-                                                  defStyleAttr: Int = 0,
-                                                  defStyleRes: Int = 0)
-    : View(context, attrs, defStyleAttr, defStyleRes) {
+open class TimelineView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+    defStyleRes: Int = 0
+) : View(context, attrs, defStyleAttr, defStyleRes) {
 
-    var timeRange: ClosedRange<SimpleTime> by invalidateOnChange(SimpleTime(7, 0)..SimpleTime(19, 0))
+    var timeRange: ClosedRange<SimpleTime> by invalidateOnChange(
+        SimpleTime(7, 0)..SimpleTime(
+            19,
+            0
+        )
+    )
     var timeTextInterval: Int by invalidateOnChange(1)
 
     var barWidth: Float by invalidateOnChange(context.dp2px(12f))
@@ -40,6 +46,8 @@ open class TimelineView @JvmOverloads constructor(context: Context,
     private var lastMeasuredHeight: Int = 0
     protected lateinit var timeRangeToRect: (ClosedRange<SimpleTime>) -> RectF
 
+    var highlightEnable: Boolean by invalidateOnChange(true)
+
     companion object {
         private val TIME_FORMATTER = SimpleDateFormat("H:mm", Locale.US)
     }
@@ -50,15 +58,36 @@ open class TimelineView @JvmOverloads constructor(context: Context,
             typedArray.getString(R.styleable.TimelineView_timeRange)?.let { setTimeRange(it) }
             timeTextInterval = typedArray.getInt(R.styleable.TimelineView_fractionTextInterval, 1)
             barWidth = typedArray.getDimension(R.styleable.TimelineView_barWidth, barWidth)
-            barColorAvailable = typedArray.getColor(R.styleable.TimelineView_barColorAvailable, barColorAvailable)
-            barColorNotAvailable = typedArray.getColor(R.styleable.TimelineView_barColorNotAvailable, barColorNotAvailable)
-            barColorHighlight = typedArray.getColor(R.styleable.TimelineView_barColorHighlight, barColorHighlight)
-            fractionPrimaryTextColor = typedArray.getColor(R.styleable.TimelineView_fractionPrimaryTextColor, fractionPrimaryTextColor)
-            fractionSecondaryTextColor = typedArray.getColor(R.styleable.TimelineView_fractionSecondaryTextColor, fractionSecondaryTextColor)
-            fractionTextSize = typedArray.getDimension(R.styleable.TimelineView_fractionTextSize, fractionTextSize)
-            fractionLineWidth = typedArray.getDimension(R.styleable.TimelineView_fractionLineWidth, fractionLineWidth)
-            fractionLineLength = typedArray.getDimension(R.styleable.TimelineView_fractionLineLength, fractionLineLength)
-            fractionLineColor = typedArray.getColor(R.styleable.TimelineView_fractionLineColor, fractionLineColor)
+            barColorAvailable =
+                typedArray.getColor(R.styleable.TimelineView_barColorAvailable, barColorAvailable)
+            barColorNotAvailable = typedArray.getColor(
+                R.styleable.TimelineView_barColorNotAvailable,
+                barColorNotAvailable
+            )
+            barColorHighlight =
+                typedArray.getColor(R.styleable.TimelineView_barColorHighlight, barColorHighlight)
+            fractionPrimaryTextColor = typedArray.getColor(
+                R.styleable.TimelineView_fractionPrimaryTextColor,
+                fractionPrimaryTextColor
+            )
+            fractionSecondaryTextColor = typedArray.getColor(
+                R.styleable.TimelineView_fractionSecondaryTextColor,
+                fractionSecondaryTextColor
+            )
+            fractionTextSize =
+                typedArray.getDimension(R.styleable.TimelineView_fractionTextSize, fractionTextSize)
+            fractionLineWidth = typedArray.getDimension(
+                R.styleable.TimelineView_fractionLineWidth,
+                fractionLineWidth
+            )
+            fractionLineLength = typedArray.getDimension(
+                R.styleable.TimelineView_fractionLineLength,
+                fractionLineLength
+            )
+            fractionLineColor =
+                typedArray.getColor(R.styleable.TimelineView_fractionLineColor, fractionLineColor)
+            highlightEnable =
+                typedArray.getBoolean(R.styleable.TimelineView_highlightEnable, highlightEnable)
             typedArray.recycle()
         }
     }
@@ -110,12 +139,14 @@ open class TimelineView @JvmOverloads constructor(context: Context,
             }
         }
 
-        highlightRange
+        if (highlightEnable) {
+            highlightRange
                 ?.let { range -> timeRangeToRect.invoke(range) }
                 ?.let { rect ->
                     barPaint.color = barColorHighlight
                     canvas.drawRect(rect, barPaint)
                 }
+        }
     }
 
     private fun measureDrawingItems(): Pair<Int, Int> {
@@ -127,17 +158,19 @@ open class TimelineView @JvmOverloads constructor(context: Context,
         val textHeight = textBound.height().toFloat()
         val hourlyXOffset = (measuredWidth - textBound.width()) / hourCount - 1
         val textXPositions = (0..hourCount)
-                .map { index -> (index * hourlyXOffset).toFloat() }
+            .map { index -> (index * hourlyXOffset).toFloat() }
         val textItems = (0..hourCount)
-                .filter { index -> index % timeTextInterval == 0 }
-                .map { timeRange.start.toSeconds() + (it * 3600) }
-                .map { formatTime(it) }
-                .mapIndexed { index, text ->
-                    DrawingItem.Text(text,
-                            (index * timeTextInterval * hourlyXOffset).toFloat(),
-                            textHeight,
-                            if (index % 2 == 0) fractionPrimaryTextColor else fractionSecondaryTextColor)
-                }
+            .filter { index -> index % timeTextInterval == 0 }
+            .map { timeRange.start.toSeconds() + (it * 3600) }
+            .map { formatTime(it) }
+            .mapIndexed { index, text ->
+                DrawingItem.Text(
+                    text,
+                    (index * timeTextInterval * hourlyXOffset).toFloat(),
+                    textHeight,
+                    if (index % 2 == 0) fractionPrimaryTextColor else fractionSecondaryTextColor
+                )
+            }
 
         val mainBarTop = textHeight + fractionLineLength
         val mainBarBottom = mainBarTop + barWidth
@@ -146,22 +179,30 @@ open class TimelineView @JvmOverloads constructor(context: Context,
         val mainBarRect = RectF(mainBarLeft, mainBarTop, mainBarRight, mainBarBottom)
 
         val timeToX: (SimpleTime) -> Float = { time ->
-            val k = (time.toSeconds() - timeRange.start.toSeconds()) / (timeRange.endInclusive - timeRange.start).toSeconds().toFloat()
+            val k =
+                (time.toSeconds() - timeRange.start.toSeconds()) / (timeRange.endInclusive - timeRange.start).toSeconds()
+                    .toFloat()
             mainBarLeft + (mainBarRight - mainBarLeft) * k
         }
         timeRangeToRect = { (start, end) ->
             RectF(timeToX(start), mainBarTop, timeToX(end), mainBarBottom)
         }
         val rectItems = listOf(DrawingItem.Rectangle(mainBarRect, barColorNotAvailable))
-                .plus(availableRanges
-                        .map { timeRangeToRect.invoke(it) }
-                        .map { DrawingItem.Rectangle(it, barColorAvailable) }
-                )
+            .plus(availableRanges
+                .map { timeRangeToRect.invoke(it) }
+                .map { DrawingItem.Rectangle(it, barColorAvailable) }
+            )
 
         val fractionTop = textHeight + 1
         val lineItems = textXPositions
-                .map { it + textWidth2 }
-                .map { DrawingItem.Line(PointF(it, fractionTop), PointF(it, mainBarBottom), fractionLineColor) }
+            .map { it + textWidth2 }
+            .map {
+                DrawingItem.Line(
+                    PointF(it, fractionTop),
+                    PointF(it, mainBarBottom),
+                    fractionLineColor
+                )
+            }
 
         drawingItems.clear()
         drawingItems += textItems
@@ -210,23 +251,28 @@ open class TimelineView @JvmOverloads constructor(context: Context,
     }
 
     protected sealed class DrawingItem {
-        data class Text(val text: String, val x: Float, val y: Float, val color: Int) : DrawingItem()
+        data class Text(val text: String, val x: Float, val y: Float, val color: Int) :
+            DrawingItem()
+
         data class Rectangle(val rect: RectF, val color: Int) : DrawingItem()
         data class Line(val from: PointF, val to: PointF, val color: Int) : DrawingItem()
 
     }
 
-    private inline fun <T> invalidateOnChange(initialValue: T) = doOnChange(initialValue) { invalidateItemsAndDraw() }
-    private inline fun <T> redrawOnChange(initialValue: T?) = doOnChange(initialValue) { postInvalidate() }
+    private inline fun <T> invalidateOnChange(initialValue: T) =
+        doOnChange(initialValue) { invalidateItemsAndDraw() }
+
+    private inline fun <T> redrawOnChange(initialValue: T?) =
+        doOnChange(initialValue) { postInvalidate() }
 
     private fun parseTimeRange(timeRangeText: String): ClosedRange<SimpleTime>? {
         return timeRangeText.split("-")
-                .map { SimpleTime.from(it.trim()) }
-                .run {
-                    when (this.size) {
-                        2 -> this[0]..this[1]
-                        else -> null
-                    }
+            .map { SimpleTime.from(it.trim()) }
+            .run {
+                when (this.size) {
+                    2 -> this[0]..this[1]
+                    else -> null
                 }
+            }
     }
 }

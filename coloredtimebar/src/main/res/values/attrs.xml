@@ -13,6 +13,7 @@
         <attr name="fractionLineWidth" format="dimension" />
         <attr name="fractionLineLength" format="dimension" />
         <attr name="fractionLineColor" format="color" />
+        <attr name="highlightEnable" format="boolean" />
     </declare-styleable>
     <declare-styleable name="TimelinePickerView">
         <attr name="pickerDrawable" format="reference" />

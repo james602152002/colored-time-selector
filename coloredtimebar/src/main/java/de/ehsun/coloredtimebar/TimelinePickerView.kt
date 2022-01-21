@@ -92,36 +92,38 @@ class TimelinePickerView @JvmOverloads constructor(
 //            ?: SimpleTime.fromMinutes(range.start))..(highlightRange?.endInclusive
 //            ?: SimpleTime.fromMinutes(range.endInclusive))
         //drawPicker if has highlight
-        highlightRange ?: return
+        if (highlightEnable) {
+            highlightRange?.let { highlight ->
+                val timeRange = highlight.start..highlight.endInclusive
+                timeRangeToRect.invoke(timeRange)
+                    .let { rect ->
+                        val handle1Left = (rect.left - (pickerDrawable.intrinsicWidth / 2f)).toInt()
+                        val handle2Left =
+                            (rect.right - (pickerDrawable.intrinsicWidth / 2f)).toInt()
+                        val drawableWidth = pickerDrawable.intrinsicWidth
+                        val drawableHeight = pickerDrawable.intrinsicHeight
 
-        val timeRange = highlightRange!!.start..highlightRange!!.endInclusive
-
-        timeRangeToRect.invoke(timeRange)
-            .let { rect ->
-                val handle1Left = (rect.left - (pickerDrawable.intrinsicWidth / 2f)).toInt()
-                val handle2Left = (rect.right - (pickerDrawable.intrinsicWidth / 2f)).toInt()
-                val drawableWidth = pickerDrawable.intrinsicWidth
-                val drawableHeight = pickerDrawable.intrinsicHeight
-
-                listOf(
-                    Rect(
-                        handle1Left,
-                        rect.bottom.toInt(),
-                        handle1Left + drawableWidth,
-                        rect.bottom.toInt() + drawableHeight
-                    ),
-                    Rect(
-                        handle2Left,
-                        rect.bottom.toInt(),
-                        handle2Left + drawableWidth,
-                        rect.bottom.toInt() + drawableHeight
-                    )
-                )
+                        listOf(
+                            Rect(
+                                handle1Left,
+                                rect.bottom.toInt(),
+                                handle1Left + drawableWidth,
+                                rect.bottom.toInt() + drawableHeight
+                            ),
+                            Rect(
+                                handle2Left,
+                                rect.bottom.toInt(),
+                                handle2Left + drawableWidth,
+                                rect.bottom.toInt() + drawableHeight
+                            )
+                        )
+                    }
+                    .forEach {
+                        pickerDrawable.bounds = it
+                        pickerDrawable.draw(this)
+                    }
             }
-            .forEach {
-                pickerDrawable.bounds = it
-                pickerDrawable.draw(this)
-            }
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
