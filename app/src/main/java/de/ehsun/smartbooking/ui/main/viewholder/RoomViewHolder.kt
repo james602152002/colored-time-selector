@@ -1,6 +1,6 @@
 package de.ehsun.smartbooking.ui.main.viewholder
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,7 +27,7 @@ class RoomViewHolder private constructor(itemView: View) : RecyclerView.ViewHold
             roomNameTextView.text = context.getString(R.string.room_number, room.name)
             roomSizeTextView.text = context.getString(R.string.room_size, room.size)
 
-            Picasso.with(context)
+            Picasso.Builder(context).build()
                     .load(room.images[0])
                     .placeholder(R.drawable.ic_photo_24dp)
                     .error(R.drawable.ic_photo_24dp)

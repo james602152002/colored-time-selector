@@ -1,16 +1,17 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.2.10'
+    ext.kotlin_version = '1.6.10'
     repositories {
         google()
+        mavenCentral()
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.1'
+        classpath 'com.android.tools.build:gradle:7.0.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
+//        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+//        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -19,6 +20,7 @@ buildscript {
 allprojects {
     repositories {
         google()
+        mavenCentral()
         jcenter()
     }
     tasks.withType(Javadoc) {
@@ -37,14 +39,14 @@ task androidJavadocs(type: Javadoc) {
 ext{
     //Libraries Version
     supportLibrariesVersion = '27.0.2'
-    rxAndroidVersion = '2.0.1'
+    rxAndroidVersion = '2.1.1'
     rxJavaVersion = '2.1.5'
-    rxKotlinVersion = '2.0.3'
-    daggerVersion = '2.5'
-    retrofitVersion = '2.3.0'
-    okhttpVersion = '3.9.0'
-    gsonVersion = '2.8.2'
-    picassoVersion = '2.5.2'
+    rxKotlinVersion = '2.3.0'
+    daggerVersion = '2.40.5'
+    retrofitVersion = '2.9.0'
+    okhttpVersion = '5.0.0-alpha.3'
+    gsonVersion = '2.8.8'
+    picassoVersion = '2.71828'
     picassoOkHttp = '1.1.0'
     jodaTimeVersion = '2.9.9'
     playServiceVersion = '11.8.0'

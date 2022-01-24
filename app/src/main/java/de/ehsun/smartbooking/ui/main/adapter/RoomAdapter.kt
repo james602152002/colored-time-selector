@@ -1,6 +1,6 @@
 package de.ehsun.smartbooking.ui.main.adapter
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
 import de.ehsun.smartbooking.entities.Room
 import de.ehsun.smartbooking.ui.main.viewholder.LocationViewHolder
@@ -33,7 +33,7 @@ class RoomAdapter(var roomEventListener: RoomEventListener) : RecyclerView.Adapt
 
     override fun getItemViewType(position: Int) = items[position].type
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is LocationViewHolder -> {
                 val location = (items[position] as Item.LocationItem).title

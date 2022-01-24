@@ -1,7 +1,7 @@
 package de.ehsun.smartbooking.ui.base
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.widget.Toast
 import de.ehsun.smartbooking.ApplicationComponent
 import de.ehsun.smartbooking.BookLibraryApplication

@@ -10,9 +10,9 @@ import retrofit2.http.POST
 
 interface ApiService {
 
-    @POST("/rooms")
+    @POST("https://roombooking.getsandbox.com/rooms")
     fun getRooms(@Body roomRequest: RoomRequest): Flowable<List<Room>>
 
-    @POST("/sendpass")
+    @POST("https://roombooking.getsandbox.com/sendpass")
     fun postBookingInfo(@Body bookingInfo: BookingInfo): Flowable<BookingResult>
 }

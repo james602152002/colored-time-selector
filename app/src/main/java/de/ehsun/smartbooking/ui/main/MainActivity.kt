@@ -6,8 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.PopupMenu
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.appcompat.widget.PopupMenu
 import android.view.Gravity
 import android.view.MenuItem
 import android.view.View
@@ -61,14 +61,15 @@ class MainActivity : BaseActivity(), MainContract.View, PopupMenu.OnMenuItemClic
 
     override fun initViews() {
         adapter = RoomAdapter(this)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayShowHomeEnabled(true)
         title = ""
 
-        sortTextView.setOnClickListener({ showSortPopup(sortImageButton) })
+        findViewById<View>(R.id.sortTextView).setOnClickListener({ showSortPopup(findViewById(R.id.sortImageButton)) })
         initDatePicker()
-        val layoutManager = LinearLayoutManager(this)
-        filterViewGroup.setOnClickListener({ showFilterPopup(app_bar_layout) })
+        val layoutManager =
+            LinearLayoutManager(this)
+        findViewById<View>(R.id.filterViewGroup).setOnClickListener({ showFilterPopup(findViewById(R.id.app_bar_layout)) })
         swipeRefreshContainer.setOnRefreshListener({ presenter.onRefreshBooks() })
         booksRecyclerView.layoutManager = layoutManager
         booksRecyclerView.adapter = adapter

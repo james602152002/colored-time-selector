@@ -18,6 +18,7 @@
         <activity
             android:name=".ui.launch.LaunchActivity"
             android:screenOrientation="portrait"
+            android:exported="true"
             android:theme="@style/LaunchMaterialTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

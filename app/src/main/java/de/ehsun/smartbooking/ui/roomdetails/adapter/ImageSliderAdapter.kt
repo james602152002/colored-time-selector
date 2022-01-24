@@ -1,13 +1,13 @@
 package de.ehsun.smartbooking.ui.roomdetails.adapter
 
 import android.content.Context
-import android.support.v4.view.PagerAdapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import androidx.viewpager.widget.PagerAdapter
 import com.squareup.picasso.Picasso
 import de.ehsun.smartbooking.R
-import kotlinx.android.synthetic.main.image_slide.view.*
 
 class ImageSliderAdapter(val context: Context, val images: List<String>) : PagerAdapter() {
     override fun isViewFromObject(view: View, obj: Any) = view == obj
@@ -20,9 +20,9 @@ class ImageSliderAdapter(val context: Context, val images: List<String>) : Pager
 
         with(viewLayout)
         {
-            Picasso.with(context)
-                    .load(images[position])
-                    .into(slideImageView)
+            Picasso.Builder(context).build()
+                .load(images[position])
+                .into(viewLayout.findViewById<ImageView>(R.id.slideImageView))
             container.addView(viewLayout)
         }
 

@@ -3,11 +3,11 @@ package de.ehsun.smartbooking.ui.roomdetails
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
-import android.support.v7.widget.LinearLayoutManager
 import android.text.TextUtils
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.LinearLayoutManager
 import de.ehsun.coloredtimebar.SimpleTime
 import de.ehsun.smartbooking.R
 import de.ehsun.smartbooking.entities.Attendee
@@ -26,10 +26,11 @@ import java.util.*
 import javax.inject.Inject
 
 class RoomDetailsActivity : BaseActivity(),
-        RoomDetailsContract.View,
-        AttendeeAdapter.AttendeeEventListener {
+    RoomDetailsContract.View,
+    AttendeeAdapter.AttendeeEventListener {
 
-    @Inject lateinit var presenter: RoomDetailsContract.Presenter
+    @Inject
+    lateinit var presenter: RoomDetailsContract.Presenter
 
     private lateinit var equipmentAdapter: EquipmentAdapter
     private lateinit var attendeeAdapter: AttendeeAdapter
@@ -43,17 +44,18 @@ class RoomDetailsActivity : BaseActivity(),
         private val TIME_FORMATTER = SimpleDateFormat("HH:mm", Locale.GERMAN)
 
         @JvmStatic
-        fun create(context: Context, currentDate: Long, room: Room) = Intent(context, RoomDetailsActivity::class.java).apply {
-            this.currentDate = currentDate
-            this.room = room
-        }
+        fun create(context: Context, currentDate: Long, room: Room) =
+            Intent(context, RoomDetailsActivity::class.java).apply {
+                this.currentDate = currentDate
+                this.room = room
+            }
 
         private var Intent.currentDate: Long
             get() = this.getLongExtra(KEY_CURRENT_DATE, 0)
             set(value) {
                 this.putExtra(KEY_CURRENT_DATE, value)
             }
-        private var Intent.room: Room
+        private var Intent.room: Room?
             get() = this.getParcelableExtra(KEY_ROOM_DETAILS)
             set(value) {
                 this.putExtra(KEY_ROOM_DETAILS, value)
@@ -87,19 +89,25 @@ class RoomDetailsActivity : BaseActivity(),
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         showRooms()
 
-        val equipmentLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        val equipmentLayoutManager =
+            LinearLayoutManager(
+                this,
+                LinearLayoutManager.HORIZONTAL,
+                false
+            )
         equipmentRecyclerView.layoutManager = equipmentLayoutManager
         equipmentRecyclerView.adapter = equipmentAdapter
 
-        val attendeeLayoutManager = LinearLayoutManager(this)
+        val attendeeLayoutManager =
+            LinearLayoutManager(this)
         attendeesRecyclerView.layoutManager = attendeeLayoutManager
         attendeesRecyclerView.adapter = attendeeAdapter
 
         addAttendeeButton.setOnClickListener { _ ->
             presenter.onAddAttendeeRequested(
-                    attendeeNameEditText.text.toString(),
-                    attendeeEmailEditText.text.toString(),
-                    attendeePhoneEditText.text.toString()
+                attendeeNameEditText.text.toString(),
+                attendeeEmailEditText.text.toString(),
+                attendeePhoneEditText.text.toString()
             )
         }
         submitButton.setOnClickListener {
@@ -110,9 +118,9 @@ class RoomDetailsActivity : BaseActivity(),
 
     private fun showSubmitDialog() {
         submitDialog = AlertDialog.Builder(this)
-                .setTitle(R.string.dialog_title)
-                .setView(R.layout.view_submit_event)
-                .create()
+            .setTitle(R.string.dialog_title)
+            .setView(R.layout.view_submit_event)
+            .create()
 
         submitDialog?.setCanceledOnTouchOutside(false)
 
@@ -120,11 +128,13 @@ class RoomDetailsActivity : BaseActivity(),
             submitDialog?.submitEventButton?.setOnClickListener {
                 bookingInfo.attendees = listOfAttendees
                 bookingInfo.booking.date = intent.currentDate / 1000L
-                bookingInfo.booking.room = intent.room.name
+                bookingInfo.booking.room = intent.room?.name ?: ""
                 bookingInfo.booking.title = submitDialog?.eventTitleEditText?.text.toString()
-                bookingInfo.booking.description = submitDialog?.eventDescriptionEditText?.text.toString()
+                bookingInfo.booking.description =
+                    submitDialog?.eventDescriptionEditText?.text.toString()
                 bookingInfo.booking.startTime = timelinePicker.selectedTimeRange.start.toTimeStamp()
-                bookingInfo.booking.endTime = timelinePicker.selectedTimeRange.endInclusive.toTimeStamp()
+                bookingInfo.booking.endTime =
+                    timelinePicker.selectedTimeRange.endInclusive.toTimeStamp()
                 presenter.onSubmitBookingRequested(bookingInfo)
             }
         }
@@ -133,27 +143,30 @@ class RoomDetailsActivity : BaseActivity(),
 
     private fun showRooms() {
         val room = intent.room
-        title = getString(R.string.room_number, room.name)
-        roomNameTextView.text = getString(R.string.room_number_and_floor, room.name, room.location)
-        equipmentAdapter.set(room.equipment)
-        sizeTextView.text = getString(R.string.room_capacity_text_view, room.size, room.capacity)
-        imageViewPager.adapter = ImageSliderAdapter(this, room.images)
-        timelinePicker.setAvailableTimeRange(room.available)
+        title = getString(R.string.room_number, room?.name)
+        roomNameTextView.text =
+            getString(R.string.room_number_and_floor, room?.name, room?.location)
+        equipmentAdapter.set(room?.equipment ?: mutableListOf())
+        sizeTextView.text = getString(R.string.room_capacity_text_view, room?.size, room?.capacity)
+        imageViewPager.adapter = ImageSliderAdapter(this, room?.images ?: mutableListOf())
+        timelinePicker.setAvailableTimeRange(room?.available ?: mutableListOf())
         timelinePicker.setOnSelectedTimeRangeChangedListener { from, to ->
             selectedTimeTextView.text = getString(R.string.from_to, from.format(), to.format())
         }
-        indicator.setViewPager(imageViewPager)
+//        indicator.setViewPager(imageViewPager)
     }
 
     override fun showSuccessfulMessage(bookingResult: BookingResult) {
         submitDialog?.dismiss()
         AlertDialog.Builder(this)
-                .setMessage(when (bookingResult.success) {
+            .setMessage(
+                when (bookingResult.success) {
                     true -> R.string.submit_completed
                     false -> R.string.submit_faild
-                })
-                .setPositiveButton(R.string.ok, null)
-                .show()
+                }
+            )
+            .setPositiveButton(R.string.ok, null)
+            .show()
     }
 
     override fun showLoading() {
@@ -169,9 +182,9 @@ class RoomDetailsActivity : BaseActivity(),
 
         if (thereIsNoAttendee) {
             AlertDialog.Builder(this)
-                    .setMessage(R.string.there_is_noe_attendee)
-                    .setPositiveButton(R.string.ok, null)
-                    .show()
+                .setMessage(R.string.there_is_noe_attendee)
+                .setPositiveButton(R.string.ok, null)
+                .show()
         }
     }
 
@@ -205,12 +218,16 @@ class RoomDetailsActivity : BaseActivity(),
 
     override fun onAttendeeItemClick(attendee: Attendee) {
         AlertDialog.Builder(this)
-                .setMessage(getString(R.string.attendee_details,
-                        attendee.name,
-                        attendee.email,
-                        attendee.phone))
-                .setPositiveButton(R.string.ok, null)
-                .show()
+            .setMessage(
+                getString(
+                    R.string.attendee_details,
+                    attendee.name,
+                    attendee.email,
+                    attendee.phone
+                )
+            )
+            .setPositiveButton(R.string.ok, null)
+            .show()
     }
 
     override fun onAttendeeItemCloseClick(attendee: Attendee) {

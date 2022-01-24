@@ -45,6 +45,7 @@ open class TimelineView @JvmOverloads constructor(
     private var lastMeasuredWidth: Int = 0
     private var lastMeasuredHeight: Int = 0
     protected lateinit var timeRangeToRect: (ClosedRange<SimpleTime>) -> RectF
+    protected var totalHourlyXOffset = -1
 
     var highlightEnable: Boolean by invalidateOnChange(true)
 
@@ -156,7 +157,11 @@ open class TimelineView @JvmOverloads constructor(
         val textBound = measureText("80:08")
         val textWidth2 = textBound.width() / 2f
         val textHeight = textBound.height().toFloat()
-        val hourlyXOffset = (measuredWidth - textBound.width()) / hourCount - 1
+//        val hourlyXOffset = (measuredWidth - textBound.width()) / hourCount - 1
+        val hourlyXOffset = (measuredWidth - textBound.width()) / 5
+        // add textBoundWidth to handle last last time text
+        totalHourlyXOffset = hourlyXOffset * hourCount + textBound.width()
+
         val textXPositions = (0..hourCount)
             .map { index -> (index * hourlyXOffset).toFloat() }
         val textItems = (0..hourCount)
