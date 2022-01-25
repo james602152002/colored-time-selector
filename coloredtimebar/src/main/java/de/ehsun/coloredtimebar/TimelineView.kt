@@ -73,7 +73,7 @@ open class TimelineView @JvmOverloads constructor(
             typedArray.getString(R.styleable.TimelineView_timeRange)?.let { setTimeRange(it) }
             timeTextInterval = typedArray.getInt(R.styleable.TimelineView_fractionTextInterval, 1)
             maxHourIntervalInView = typedArray.getInt(
-                R.styleable.TimelineView_fractionTextInterval,
+                R.styleable.TimelineView_maxHourIntervalInView,
                 maxHourIntervalInView
             )
             barWidth = typedArray.getDimension(R.styleable.TimelineView_barWidth, barWidth)
