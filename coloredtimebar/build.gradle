@@ -1,8 +1,11 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+}
+
 //apply plugin: 'com.github.dcendents.android-maven'
 //classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
-
+//
 //ext {
 //    bintrayRepo = 'maven'
 //    bintrayName = 'colored-time-range-selector'
@@ -33,8 +36,8 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 2
-        versionName "1.0.1"
+        versionCode 3
+        versionName "1.0.2"
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
@@ -63,6 +66,7 @@ dependencies {
 }
 repositories {
     mavenCentral()
+    maven { url "https://jitpack.io" }
 }
 //apply from: '../gradle/installv1.gradle'
 //apply from: '../gradle/bintrayv1.gradle'
