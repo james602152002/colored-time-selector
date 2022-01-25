@@ -193,9 +193,9 @@ class TimelinePickerView @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent): Boolean {
         super.onTouchEvent(event)
 //        //fix crash
-//        if (availableRanges.isEmpty() || !highlightEnable) {
-//            return false
-//        }
+        if (!scrollable) {
+            return false
+        }
         val touchX = scrollX + event.x
 //        val hourCount = (timeRange.endInclusive - timeRange.start).toSeconds() / 3600
 //        val totalWidth = width * hourCount / 4
