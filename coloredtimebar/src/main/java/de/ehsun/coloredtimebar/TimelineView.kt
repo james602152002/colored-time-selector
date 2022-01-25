@@ -170,10 +170,11 @@ open class TimelineView @JvmOverloads constructor(
                 }
                 is DrawingItem.TotalStroke -> {
                     val minRight = min(width.toFloat() + scrollX, it.rect.right)
+                    val maxLeft = max(0f, scrollX.toFloat())
                     canvas.drawLine(
-                        it.rect.left,
+                        maxLeft,
                         it.rect.top,
-                        it.rect.left,
+                        maxLeft,
                         it.rect.bottom,
                         barStrokePaint
                     )
