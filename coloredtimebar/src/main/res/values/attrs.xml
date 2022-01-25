@@ -3,6 +3,7 @@
     <declare-styleable name="TimelineView">
         <attr name="timeRange" format="string" />
         <attr name="fractionTextInterval" format="integer" />
+        <attr name="maxHourIntervalInView" format="integer" />
         <attr name="barWidth" format="dimension" />
         <attr name="barColorAvailable" format="color" />
         <attr name="barColorNotAvailable" format="color" />
@@ -13,7 +14,12 @@
         <attr name="fractionLineWidth" format="dimension" />
         <attr name="fractionLineLength" format="dimension" />
         <attr name="fractionLineColor" format="color" />
+        <attr name="linePickerColor" format="color" />
+        <attr name="linePickerCircleColor" format="color" />
+        <attr name="barStrokeColor" format="color" />
+        <attr name="circleRadius" format="dimension" />
         <attr name="highlightEnable" format="boolean" />
+        <attr name="newStylePicker" format="boolean" />
     </declare-styleable>
     <declare-styleable name="TimelinePickerView">
         <attr name="pickerDrawable" format="reference" />

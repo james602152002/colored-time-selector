@@ -149,7 +149,8 @@ class RoomDetailsActivity : BaseActivity(),
         equipmentAdapter.set(room?.equipment ?: mutableListOf())
         sizeTextView.text = getString(R.string.room_capacity_text_view, room?.size, room?.capacity)
         imageViewPager.adapter = ImageSliderAdapter(this, room?.images ?: mutableListOf())
-        timelinePicker.setAvailableTimeRange(room?.available ?: mutableListOf())
+//        timelinePicker.setAvailableTimeRange(room?.available ?: mutableListOf())
+        timelinePicker.setAvailableTimeRange(mutableListOf("10:00-11:00","14:00-15:00"))
         timelinePicker.setOnSelectedTimeRangeChangedListener { from, to ->
             selectedTimeTextView.text = getString(R.string.from_to, from.format(), to.format())
         }

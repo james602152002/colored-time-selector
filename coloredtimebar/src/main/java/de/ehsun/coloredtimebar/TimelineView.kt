@@ -7,6 +7,8 @@ import android.util.AttributeSet
 import android.view.View
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.max
+import kotlin.math.min
 
 open class TimelineView @JvmOverloads constructor(
     context: Context,
@@ -36,17 +38,28 @@ open class TimelineView @JvmOverloads constructor(
     var fractionLineWidth: Float by invalidateOnChange(context.dp2px(1f))
     var fractionLineLength: Float by invalidateOnChange(context.dp2px(4f))
     var fractionLineColor: Int by invalidateOnChange((0xFF0F9648).toInt())
+    var linePickerColor: Int by invalidateOnChange(Color.BLACK)
+    var linePickerCircleColor: Int by invalidateOnChange(Color.WHITE)
+    var barStrokeColor: Int by invalidateOnChange(0)
+    var circleRadius: Float by invalidateOnChange(context.dp2px(4f))
 
     private var dirty: Boolean = false
     private val drawingItems = mutableListOf<DrawingItem>()
     private var textPaint = TextPaint()
     private var barPaint = Paint()
     private var linePaint = Paint()
+    protected val linePickerPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    protected val linePickerCirclePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val barStrokePaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var lastMeasuredWidth: Int = 0
     private var lastMeasuredHeight: Int = 0
     protected lateinit var timeRangeToRect: (ClosedRange<SimpleTime>) -> RectF
+    private var maxHourIntervalInView = -1
     protected var totalHourlyXOffset = -1
+    protected var scrollable = false
 
+    // If true picker both in bar, else below the bar.
+    var newStylePicker: Boolean by invalidateOnChange(true)
     var highlightEnable: Boolean by invalidateOnChange(true)
 
     companion object {
@@ -54,10 +67,15 @@ open class TimelineView @JvmOverloads constructor(
     }
 
     init {
-        attrs?.let {
-            val typedArray = context.obtainStyledAttributes(it, R.styleable.TimelineView, 0, 0)
+        attrs?.let { attributeSet ->
+            val typedArray =
+                context.obtainStyledAttributes(attributeSet, R.styleable.TimelineView, 0, 0)
             typedArray.getString(R.styleable.TimelineView_timeRange)?.let { setTimeRange(it) }
             timeTextInterval = typedArray.getInt(R.styleable.TimelineView_fractionTextInterval, 1)
+            maxHourIntervalInView = typedArray.getInt(
+                R.styleable.TimelineView_fractionTextInterval,
+                maxHourIntervalInView
+            )
             barWidth = typedArray.getDimension(R.styleable.TimelineView_barWidth, barWidth)
             barColorAvailable =
                 typedArray.getColor(R.styleable.TimelineView_barColorAvailable, barColorAvailable)
@@ -87,8 +105,21 @@ open class TimelineView @JvmOverloads constructor(
             )
             fractionLineColor =
                 typedArray.getColor(R.styleable.TimelineView_fractionLineColor, fractionLineColor)
+            linePickerColor =
+                typedArray.getColor(R.styleable.TimelineView_linePickerColor, linePickerColor)
+            linePickerCircleColor =
+                typedArray.getColor(
+                    R.styleable.TimelineView_linePickerCircleColor,
+                    linePickerCircleColor
+                )
+            barStrokeColor =
+                typedArray.getColor(R.styleable.TimelineView_barStrokeColor, barStrokeColor)
+            circleRadius =
+                typedArray.getDimension(R.styleable.TimelineView_circleRadius, circleRadius)
             highlightEnable =
                 typedArray.getBoolean(R.styleable.TimelineView_highlightEnable, highlightEnable)
+            newStylePicker =
+                typedArray.getBoolean(R.styleable.TimelineView_newStylePicker, newStylePicker)
             typedArray.recycle()
         }
     }
@@ -109,7 +140,7 @@ open class TimelineView @JvmOverloads constructor(
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         if (lastMeasuredWidth != measuredWidth || lastMeasuredHeight != measuredHeight) {
             val size = measureDrawingItems()
-            setMeasuredDimension(size.first, Math.max(size.second, measuredHeight))
+            setMeasuredDimension(size.first, max(size.second, measuredHeight))
 
             lastMeasuredWidth = measuredWidth
             lastMeasuredHeight = measuredHeight
@@ -137,6 +168,31 @@ open class TimelineView @JvmOverloads constructor(
                     linePaint.color = it.color
                     canvas.drawLine(it.from.x, it.from.y, it.to.x, it.to.y, linePaint)
                 }
+                is DrawingItem.TotalStroke -> {
+                    val minRight = min(width.toFloat() + scrollX, it.rect.right)
+                    canvas.drawLine(
+                        it.rect.left,
+                        it.rect.top,
+                        it.rect.left,
+                        it.rect.bottom,
+                        barStrokePaint
+                    )
+                    canvas.drawLine(
+                        it.rect.left,
+                        it.rect.top,
+                        it.rect.right,
+                        it.rect.top,
+                        barStrokePaint
+                    )
+                    canvas.drawLine(minRight, it.rect.top, minRight, it.rect.bottom, barStrokePaint)
+                    canvas.drawLine(
+                        it.rect.left,
+                        it.rect.bottom,
+                        it.rect.right,
+                        it.rect.bottom,
+                        barStrokePaint
+                    )
+                }
             }
         }
 
@@ -157,8 +213,13 @@ open class TimelineView @JvmOverloads constructor(
         val textBound = measureText("80:08")
         val textWidth2 = textBound.width() / 2f
         val textHeight = textBound.height().toFloat()
+
 //        val hourlyXOffset = (measuredWidth - textBound.width()) / hourCount - 1
-        val hourlyXOffset = (measuredWidth - textBound.width()) / 5
+        scrollable = maxHourIntervalInView > 0 && (hourCount > maxHourIntervalInView)
+        val hourlyXOffset = (measuredWidth - textBound.width()) / when (scrollable) {
+            true -> maxHourIntervalInView
+            else -> hourCount
+        } - 1
         // add textBoundWidth to handle last last time text
         totalHourlyXOffset = hourlyXOffset * hourCount + textBound.width()
 
@@ -178,6 +239,7 @@ open class TimelineView @JvmOverloads constructor(
             }
 
         val mainBarTop = textHeight + fractionLineLength
+
         val mainBarBottom = mainBarTop + barWidth
         val mainBarLeft = textXPositions.first() + textWidth2
         val mainBarRight = textXPositions.last() + textWidth2
@@ -209,10 +271,13 @@ open class TimelineView @JvmOverloads constructor(
                 )
             }
 
+        val totalBarStrokeItem = DrawingItem.TotalStroke(mainBarRect)
+
         drawingItems.clear()
         drawingItems += textItems
         drawingItems += lineItems
         drawingItems += rectItems
+        drawingItems += totalBarStrokeItem
         return Pair(measuredWidth, (mainBarBottom + 1).toInt())
     }
 
@@ -253,6 +318,20 @@ open class TimelineView @JvmOverloads constructor(
             this.style = Paint.Style.STROKE
             this.strokeWidth = fractionLineWidth
         }
+        with(linePickerPaint) {
+            this.color = linePickerColor
+            this.style = Paint.Style.STROKE
+        }
+        with(linePickerCirclePaint) {
+            this.color = linePickerCircleColor
+        }
+        with(barStrokePaint) {
+            this.color = barStrokeColor
+        }
+    }
+
+    fun setBarWidth(px: Int) {
+        barWidth = px.toFloat()
     }
 
     protected sealed class DrawingItem {
@@ -260,8 +339,8 @@ open class TimelineView @JvmOverloads constructor(
             DrawingItem()
 
         data class Rectangle(val rect: RectF, val color: Int) : DrawingItem()
+        data class TotalStroke(val rect: RectF) : DrawingItem()
         data class Line(val from: PointF, val to: PointF, val color: Int) : DrawingItem()
-
     }
 
     private inline fun <T> invalidateOnChange(initialValue: T) =

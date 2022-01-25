@@ -115,7 +115,7 @@
                 app:barColorAvailable="@color/available_time_default_color"
                 app:barColorHighlight="@color/selector_default_color"
                 app:barColorNotAvailable="@color/timeline_default_color"
-                app:barWidth="24dp"
+                app:barWidth="48dp"
                 app:fractionLineColor="@color/separatorDark"
                 app:fractionLineLength="8dp"
                 app:fractionLineWidth="1dp"

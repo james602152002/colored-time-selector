@@ -3,13 +3,16 @@ package de.ehsun.coloredtimebar
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.view.ViewConfiguration
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
 import kotlin.math.abs
+import kotlin.math.max
 
 class TimelinePickerView @JvmOverloads constructor(
     context: Context,
@@ -32,6 +35,9 @@ class TimelinePickerView @JvmOverloads constructor(
     private var movingHandle: TimelineHandle? = null
     private var scrollJob: Job? = null
 
+    private var prevX = 0f
+    private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+
     init {
         attrs?.let {
             val typedArray =
@@ -48,7 +54,8 @@ class TimelinePickerView @JvmOverloads constructor(
         super.setAvailableTimeRange(availableTimeRanges)
         availableRanges.firstOrNull { (start, end) -> end.toMinutes() - start.toMinutes() >= minSelectableTimeRange }
             ?.let { (start, _) ->
-                handleLeftPos = start.toMinutes()
+                // avoid available range < timeRange, or picker will not have left handler
+                handleLeftPos = max(timeRange.start.toMinutes(), start.toMinutes())
                 handleRightPos = handleLeftPos + minSelectableTimeRange
                 highlightRange =
                     SimpleTime.fromMinutes(handleLeftPos)..SimpleTime.fromMinutes(handleRightPos)
@@ -68,10 +75,17 @@ class TimelinePickerView @JvmOverloads constructor(
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        setMeasuredDimension(measuredWidth, measuredHeight + (pickerDrawable?.intrinsicHeight ?: 0))
+        when (newStylePicker) {
+            true -> setMeasuredDimension(measuredWidth, measuredHeight)
+            else -> setMeasuredDimension(
+                measuredWidth,
+                measuredHeight + (pickerDrawable?.intrinsicHeight ?: 0)
+            )
+        }
 
         xToPosConverter = { x ->
-            val mainBarRange = timeRangeToRect.invoke(timeRange).run { left..right }
+            val mainBarRange = timeRangeToRect.invoke(timeRange)
+                .run { left..max(right, totalHourlyXOffset.toFloat()) }
             when {
                 x <= mainBarRange.start -> timeRange.start.toMinutes()
                 x >= mainBarRange.endInclusive -> timeRange.endInclusive.toMinutes()
@@ -91,6 +105,7 @@ class TimelinePickerView @JvmOverloads constructor(
     }
 
     private fun Canvas.drawHandles(range: IntRange) {
+
 //        val timeRange =
 //            SimpleTime.fromMinutes(range.start)..SimpleTime.fromMinutes(range.endInclusive)
 //        val timeRange = (highlightRange?.start
@@ -102,31 +117,74 @@ class TimelinePickerView @JvmOverloads constructor(
                 val timeRange = highlight.start..highlight.endInclusive
                 timeRangeToRect.invoke(timeRange)
                     .let { rect ->
-                        val handle1Left =
-                            (rect.left - ((pickerDrawable?.intrinsicWidth ?: 0) / 2f)).toInt()
-                        val handle2Left =
-                            (rect.right - ((pickerDrawable?.intrinsicWidth ?: 0) / 2f)).toInt()
-                        val drawableWidth = pickerDrawable?.intrinsicWidth ?: 0
-                        val drawableHeight = pickerDrawable?.intrinsicHeight ?: 0
+                        when (newStylePicker) {
+                            true -> {
+                                val handle1Left = rect.left.toInt()
+                                val handle2Left = rect.right.toInt()
 
-                        listOf(
-                            Rect(
-                                handle1Left,
-                                rect.bottom.toInt(),
-                                handle1Left + drawableWidth,
-                                rect.bottom.toInt() + drawableHeight
-                            ),
-                            Rect(
-                                handle2Left,
-                                rect.bottom.toInt(),
-                                handle2Left + drawableWidth,
-                                rect.bottom.toInt() + drawableHeight
-                            )
-                        )
+                                listOf(
+                                    Rect(
+                                        handle1Left,
+                                        rect.top.toInt(),
+                                        handle1Left,
+                                        rect.bottom.toInt()
+                                    ),
+                                    Rect(
+                                        handle2Left,
+                                        rect.top.toInt(),
+                                        handle2Left,
+                                        rect.bottom.toInt()
+                                    )
+                                )
+                            }
+                            else -> {
+                                val handle1Left =
+                                    (rect.left - ((pickerDrawable?.intrinsicWidth
+                                        ?: 0) / 2f)).toInt()
+                                val handle2Left =
+                                    (rect.right - ((pickerDrawable?.intrinsicWidth
+                                        ?: 0) / 2f)).toInt()
+                                val drawableWidth = pickerDrawable?.intrinsicWidth ?: 0
+                                val drawableHeight = pickerDrawable?.intrinsicHeight ?: 0
+
+
+                                listOf(
+                                    Rect(
+                                        handle1Left,
+                                        rect.bottom.toInt(),
+                                        handle1Left + drawableWidth,
+                                        rect.bottom.toInt() + drawableHeight
+                                    ),
+                                    Rect(
+                                        handle2Left,
+                                        rect.bottom.toInt(),
+                                        handle2Left + drawableWidth,
+                                        rect.bottom.toInt() + drawableHeight
+                                    )
+                                )
+                            }
+                        }
                     }
                     .forEach {
-                        pickerDrawable?.bounds = it
-                        pickerDrawable?.draw(this)
+                        when (newStylePicker) {
+                            true -> {
+                                val lineX = (it.left + it.right) / 2f
+                                val centerY = it.centerY().toFloat()
+                                drawLine(
+                                    lineX,
+                                    it.top.toFloat(),
+                                    lineX,
+                                    it.bottom.toFloat(),
+                                    linePickerPaint
+                                )
+                                drawCircle(lineX, centerY, circleRadius, linePickerCirclePaint)
+                                drawCircle(lineX, centerY, circleRadius, linePickerPaint)
+                            }
+                            else -> {
+                                pickerDrawable?.bounds = it
+                                pickerDrawable?.draw(this)
+                            }
+                        }
                     }
             }
         }
@@ -144,10 +202,43 @@ class TimelinePickerView @JvmOverloads constructor(
 //        val totalWidth = width * hourCount / 4
         return when (event.action) {
             MotionEvent.ACTION_DOWN -> {
+                scrollJob?.cancel()
+                prevX = event.x
                 val pos = xToPosConverter(touchX)
+
+                // consider touchX is closed to pickerPos then select picker handle to scroll, else decide downX to scroll
+                val movingHandlerLimit = width / 20f
                 movingHandle = when {
-                    abs(handleLeftPos - pos) < abs(handleRightPos - pos) -> TimelineHandle.LEFT
-                    else -> TimelineHandle.RIGHT
+                    abs(handleLeftPos - pos) < abs(handleRightPos - pos) -> {
+                        when (abs(handleLeftPos - pos) <= movingHandlerLimit) {
+                            true -> TimelineHandle.LEFT
+                            else -> {
+                                availableRanges.find { handleRightPos in it.start.toMinutes()..it.endInclusive.toMinutes() }
+                                    ?.let { availableRange ->
+                                        if (availableRanges.find { pos in it.start.toMinutes()..it.endInclusive.toMinutes() } != null &&
+                                            pos !in availableRange.start.toMinutes()..availableRange.endInclusive.toMinutes()) {
+                                            setLeftHandle(pos)
+                                        }
+                                    }
+                                null
+                            }
+                        }
+                    }
+                    else -> {
+                        when (abs(handleRightPos - pos) <= movingHandlerLimit) {
+                            true -> TimelineHandle.RIGHT
+                            else -> {
+                                availableRanges.find { handleLeftPos in it.start.toMinutes()..it.endInclusive.toMinutes() }
+                                    ?.let { availableRange ->
+                                        if (availableRanges.find { pos in it.start.toMinutes()..it.endInclusive.toMinutes() } != null &&
+                                            pos !in availableRange.start.toMinutes()..availableRange.endInclusive.toMinutes()) {
+                                            setRightHandle(pos)
+                                        }
+                                    }
+                                null
+                            }
+                        }
+                    }
                 }
                 when (movingHandle) {
                     TimelineHandle.LEFT -> setLeftHandle(pos)
@@ -159,24 +250,51 @@ class TimelinePickerView @JvmOverloads constructor(
             MotionEvent.ACTION_MOVE -> {
                 parent.requestDisallowInterceptTouchEvent(true)
                 val pos = xToPosConverter(touchX)
+                val moveX = event.x
                 when (movingHandle) {
                     TimelineHandle.LEFT -> {
                         setLeftHandle(pos)
-                        decideWhetherScrollDir(event.x, this::setLeftHandle)
+                        decideWhetherScrollDir(moveX, this::setLeftHandle)
                     }
                     TimelineHandle.RIGHT -> {
                         setRightHandle(pos)
-                        decideWhetherScrollDir(event.x, this::setRightHandle)
+                        decideWhetherScrollDir(moveX, this::setRightHandle)
                     }
-                    else -> {}
+                    else -> {
+                        // scrolling
+                        if (abs(prevX - moveX) > touchSlop) {
+                            val nextScrollX = scrollX + (prevX - moveX).toInt()
+                            scrollX = when (nextScrollX) {
+                                in 0..(totalHourlyXOffset - width) -> nextScrollX
+                                else -> if (nextScrollX < 0) 0 else when (scrollable) {
+                                    true -> (totalHourlyXOffset - width)
+                                    else -> 0
+                                }
+                            }
+                            prevX = moveX
+                        }
+                    }
                 }
                 true
             }
             MotionEvent.ACTION_UP -> {
+                //in scrollView when touch out of range then trigger cancel event
+                if (event.x.toInt() in 0..width && event.y.toInt() in 0..height) {
+                    scrollJob?.cancel()
+                    parent.requestDisallowInterceptTouchEvent(false)
+                    true
+                } else {
+                    //out of range
+                    event.action = MotionEvent.ACTION_CANCEL
+                    return onTouchEvent(event)
+                }
+            }
+            //MotionEvent.ACTION_UP
+            else -> {
+                scrollJob?.cancel()
                 parent.requestDisallowInterceptTouchEvent(false)
                 true
             }
-            else -> false
         }
     }
 
@@ -211,16 +329,6 @@ class TimelinePickerView @JvmOverloads constructor(
                 }
             }
         }
-    }
-
-    override fun dispatchTouchEvent(event: MotionEvent?): Boolean {
-        when (event?.action) {
-            MotionEvent.ACTION_UP,
-            MotionEvent.ACTION_CANCEL -> {
-                scrollJob?.cancel()
-            }
-        }
-        return super.dispatchTouchEvent(event)
     }
 
     private fun setLeftHandle(newValue: Int) {
