@@ -3,7 +3,6 @@ package de.ehsun.coloredtimebar
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
@@ -193,10 +192,10 @@ class TimelinePickerView @JvmOverloads constructor(
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         super.onTouchEvent(event)
-        //fix crash
-        if (availableRanges.isEmpty() || !highlightEnable) {
-            return false
-        }
+//        //fix crash
+//        if (availableRanges.isEmpty() || !highlightEnable) {
+//            return false
+//        }
         val touchX = scrollX + event.x
 //        val hourCount = (timeRange.endInclusive - timeRange.start).toSeconds() / 3600
 //        val totalWidth = width * hourCount / 4
@@ -332,6 +331,10 @@ class TimelinePickerView @JvmOverloads constructor(
     }
 
     private fun setLeftHandle(newValue: Int) {
+        //fix crash
+        if (availableRanges.isEmpty() || !highlightEnable) {
+            return
+        }
         var correctValue = roundPosByStep(newValue)
         if (handleRightPos - correctValue < minSelectableTimeRange) {
             correctValue = handleRightPos - minSelectableTimeRange
