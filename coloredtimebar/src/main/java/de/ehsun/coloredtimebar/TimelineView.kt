@@ -257,7 +257,14 @@ open class TimelineView @JvmOverloads constructor(
         }
         val rectItems = listOf(DrawingItem.Rectangle(mainBarRect, barColorNotAvailable))
             .plus(availableRanges
-                .map { timeRangeToRect.invoke(it) }
+                .map {
+                    if (it.endInclusive <= timeRange.endInclusive) {
+                        timeRangeToRect.invoke(it)
+                    } else {
+                        //when rect over time range then cut last rect part
+                        timeRangeToRect.invoke(it.start..timeRange.endInclusive)
+                    }
+                }
                 .map { DrawingItem.Rectangle(it, barColorAvailable) }
             )
 
