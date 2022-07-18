@@ -2,20 +2,17 @@ package de.ehsun.coloredtimebar
 
 import android.content.Context
 import android.graphics.*
+import android.os.Build
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.View
+import androidx.annotation.RequiresApi
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
-open class TimelineView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0,
-    defStyleRes: Int = 0
-) : View(context, attrs, defStyleAttr, defStyleRes) {
+open class TimelineView : View {
 
     var timeRange: ClosedRange<SimpleTime> by invalidateOnChange(
         SimpleTime(7, 0)..SimpleTime(
@@ -62,11 +59,45 @@ open class TimelineView @JvmOverloads constructor(
     var newStylePicker: Boolean by invalidateOnChange(true)
     var highlightEnable: Boolean by invalidateOnChange(true)
 
+    private val strokeItems = mutableListOf<DrawingItem.TotalStroke>()
+
     companion object {
         private val TIME_FORMATTER = SimpleDateFormat("H:mm", Locale.US)
     }
 
-    init {
+    constructor(context: Context) : super(
+        context
+    )
+
+    constructor(context: Context, attrs: AttributeSet?) : super(
+        context,
+        attrs
+    )
+
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
+        initAttrs(attrs)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    constructor(
+        context: Context,
+        attrs: AttributeSet?,
+        defStyleAttr: Int,
+        defStyleRes: Int
+    ) : super(
+        context,
+        attrs,
+        defStyleAttr,
+        defStyleRes
+    ) {
+        initAttrs(attrs)
+    }
+
+    private fun initAttrs(attrs: AttributeSet?) {
         attrs?.let { attributeSet ->
             val typedArray =
                 context.obtainStyledAttributes(attributeSet, R.styleable.TimelineView, 0, 0)
@@ -154,6 +185,7 @@ open class TimelineView @JvmOverloads constructor(
             measureDrawingItems()
         }
 
+        strokeItems.clear()
         drawingItems.forEach {
             when (it) {
                 is DrawingItem.Text -> {
@@ -169,30 +201,7 @@ open class TimelineView @JvmOverloads constructor(
                     canvas.drawLine(it.from.x, it.from.y, it.to.x, it.to.y, linePaint)
                 }
                 is DrawingItem.TotalStroke -> {
-                    val minRight = min(width.toFloat() + scrollX, it.rect.right) - 1
-                    val maxLeft = max(0f, scrollX.toFloat()) + it.rect.left
-                    canvas.drawLine(
-                        maxLeft,
-                        it.rect.top,
-                        maxLeft,
-                        it.rect.bottom,
-                        barStrokePaint
-                    )
-                    canvas.drawLine(
-                        it.rect.left,
-                        it.rect.top,
-                        it.rect.right,
-                        it.rect.top,
-                        barStrokePaint
-                    )
-                    canvas.drawLine(minRight, it.rect.top, minRight, it.rect.bottom, barStrokePaint)
-                    canvas.drawLine(
-                        it.rect.left,
-                        it.rect.bottom,
-                        it.rect.right,
-                        it.rect.bottom,
-                        barStrokePaint
-                    )
+                    strokeItems += it
                 }
             }
         }
@@ -204,6 +213,39 @@ open class TimelineView @JvmOverloads constructor(
                     barPaint.color = barColorHighlight
                     canvas.drawRect(rect, barPaint)
                 }
+        }
+
+        strokeItems.forEach {
+            val minRight = min(width.toFloat() + scrollX, it.rect.right) - 1
+
+            val textBound = measureText("80:08")
+            val textWidth2 = textBound.width() / 2f
+            val maxLeft = when (scrollX.toFloat() < textWidth2) {
+                true -> it.rect.left + 1
+                else -> scrollX.toFloat() + 1
+            }
+            canvas.drawLine(
+                maxLeft,
+                it.rect.top,
+                maxLeft,
+                it.rect.bottom,
+                barStrokePaint
+            )
+            canvas.drawLine(
+                it.rect.left,
+                it.rect.top,
+                it.rect.right,
+                it.rect.top,
+                barStrokePaint
+            )
+            canvas.drawLine(minRight, it.rect.top, minRight, it.rect.bottom, barStrokePaint)
+            canvas.drawLine(
+                it.rect.left,
+                it.rect.bottom,
+                it.rect.right,
+                it.rect.bottom,
+                barStrokePaint
+            )
         }
     }
 

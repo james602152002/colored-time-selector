@@ -58,6 +58,11 @@ class TimelinePickerView @JvmOverloads constructor(
                 handleRightPos = handleLeftPos + minSelectableTimeRange
                 highlightRange =
                     SimpleTime.fromMinutes(handleLeftPos)..SimpleTime.fromMinutes(handleRightPos)
+
+                //滚动模式自动定位到可以选择的部分
+                if (scrollable) {
+                    scrollX = start.toMinutes()
+                }
             }
     }
 
@@ -318,7 +323,7 @@ class TimelinePickerView @JvmOverloads constructor(
                 if ((dx > 0 && scrollX + dx + width <= totalHourlyXOffset) || (dx < 0 && scrollX + dx >= 0)) {
                     scrollX += dx
                     val posOffset = xToPosConverter(eventX + scrollX)
-                    timeRange.endInclusive.minute
+//                    timeRange.endInclusive.minute
                     withContext(Dispatchers.Main) {
                         scrollImpl(posOffset)
                     }
