@@ -80,7 +80,10 @@ class TimelinePickerView @JvmOverloads constructor(
                         max(timeRangeToRect(thirtyMinBeforeStart..start).left.roundToInt(), 0)
                     scrollX = maxScrollX
                 }
-            }
+            } ?: kotlin.run {
+            //如果没有可以选择的控件则把highLight左右Handler拿掉
+            highlightRange = null
+        }
     }
 
     override fun setHighlightTimeRange(timeRange: String) {
@@ -238,43 +241,45 @@ class TimelinePickerView @JvmOverloads constructor(
                 val pos = xToPosConverter(touchX)
 
                 // consider touchX is closed to pickerPos then select picker handle to scroll, else decide downX to scroll
-                val movingHandlerLimit = width / 20f
-                movingHandle = when {
-                    abs(handleLeftPos - pos) < abs(handleRightPos - pos) -> {
-                        when (abs(handleLeftPos - pos) <= movingHandlerLimit) {
-                            true -> TimelineHandle.LEFT
-                            else -> {
-                                availableRanges.find { handleRightPos in it.start.toMinutes()..it.endInclusive.toMinutes() }
-                                    ?.let { availableRange ->
-                                        if (availableRanges.find { pos in it.start.toMinutes()..it.endInclusive.toMinutes() } != null &&
-                                            pos !in availableRange.start.toMinutes()..availableRange.endInclusive.toMinutes()) {
-                                            setLeftHandle(pos)
+                if (highlightRange != null) {
+                    val movingHandlerLimit = width / 20f
+                    movingHandle = when {
+                        abs(handleLeftPos - pos) < abs(handleRightPos - pos) -> {
+                            when (abs(handleLeftPos - pos) <= movingHandlerLimit) {
+                                true -> TimelineHandle.LEFT
+                                else -> {
+                                    availableRanges.find { handleRightPos in it.start.toMinutes()..it.endInclusive.toMinutes() }
+                                        ?.let { availableRange ->
+                                            if (availableRanges.find { pos in it.start.toMinutes()..it.endInclusive.toMinutes() } != null &&
+                                                pos !in availableRange.start.toMinutes()..availableRange.endInclusive.toMinutes()) {
+                                                setLeftHandle(pos)
+                                            }
                                         }
-                                    }
-                                null
+                                    null
+                                }
+                            }
+                        }
+                        else -> {
+                            when (abs(handleRightPos - pos) <= movingHandlerLimit) {
+                                true -> TimelineHandle.RIGHT
+                                else -> {
+                                    availableRanges.find { handleLeftPos in it.start.toMinutes()..it.endInclusive.toMinutes() }
+                                        ?.let { availableRange ->
+                                            if (availableRanges.find { pos in it.start.toMinutes()..it.endInclusive.toMinutes() } != null &&
+                                                pos !in availableRange.start.toMinutes()..availableRange.endInclusive.toMinutes()) {
+                                                setRightHandle(pos)
+                                            }
+                                        }
+                                    null
+                                }
                             }
                         }
                     }
-                    else -> {
-                        when (abs(handleRightPos - pos) <= movingHandlerLimit) {
-                            true -> TimelineHandle.RIGHT
-                            else -> {
-                                availableRanges.find { handleLeftPos in it.start.toMinutes()..it.endInclusive.toMinutes() }
-                                    ?.let { availableRange ->
-                                        if (availableRanges.find { pos in it.start.toMinutes()..it.endInclusive.toMinutes() } != null &&
-                                            pos !in availableRange.start.toMinutes()..availableRange.endInclusive.toMinutes()) {
-                                            setRightHandle(pos)
-                                        }
-                                    }
-                                null
-                            }
-                        }
+                    when (movingHandle) {
+                        TimelineHandle.LEFT -> setLeftHandle(pos)
+                        TimelineHandle.RIGHT -> setRightHandle(pos)
+                        else -> {}
                     }
-                }
-                when (movingHandle) {
-                    TimelineHandle.LEFT -> setLeftHandle(pos)
-                    TimelineHandle.RIGHT -> setRightHandle(pos)
-                    else -> {}
                 }
                 true
             }
@@ -393,7 +398,9 @@ class TimelinePickerView @JvmOverloads constructor(
     }
 
     fun invokeSelectedTimeRangeChanged() {
-        highlightRange?.let { onSelectedTimeRangeChanged?.invoke(it.start, it.endInclusive) }
+        highlightRange?.let {
+            onSelectedTimeRangeChanged?.invoke(it.start, it.endInclusive)
+        }
     }
 
     private fun setLeftHandle(newValue: Int) {
