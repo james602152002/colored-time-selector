@@ -76,9 +76,12 @@ class TimelinePickerView @JvmOverloads constructor(
                     //开始时间前三十分钟
                     val thirtyMinBeforeStart = SimpleTime.fromMinutes(start.toMinutes() - 60)
                     //如果比availableRange早则，定位在scrollX = 0
-                    val maxScrollX =
-                        max(timeRangeToRect(thirtyMinBeforeStart..start).left.roundToInt(), 0)
-                    scrollX = maxScrollX
+//                    val maxScrollX =
+//                        max(timeRangeToRect(thirtyMinBeforeStart..start).left.roundToInt(), 0)
+                    val maxScrollX =timeRangeToRect(thirtyMinBeforeStart..start).left.roundToInt()
+                    timeRangeRect.set(timeRangeToRect(timeRange))
+                    mFling.startScroll(scrollX, 0, maxScrollX, 0, abs(maxScrollX - scrollX))
+//                    scrollX = maxScrollX
                 }
             } ?: kotlin.run {
             //如果没有可以选择的控件则把highLight左右Handler拿掉
