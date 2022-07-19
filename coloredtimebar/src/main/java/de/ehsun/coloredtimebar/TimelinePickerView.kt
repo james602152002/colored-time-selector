@@ -342,7 +342,7 @@ class TimelinePickerView @JvmOverloads constructor(
     }
 
     override fun computeScroll() {
-        if (!mFling.isFinished) {
+        if (mFling.computeScrollOffset()) {
             val rightBound = (timeRangeRect.right - width + timeRangeRect.left).toInt()
             //超越边界停止滚动
             scrollX = when (val currentX = mFling.currX) {
@@ -350,7 +350,7 @@ class TimelinePickerView @JvmOverloads constructor(
                 in Int.MIN_VALUE..0 -> 0
                 else -> rightBound
             }
-            mFling.computeScrollOffset()
+            postInvalidate()
         }
     }
 
