@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 class TimelinePickerView @JvmOverloads constructor(
     context: Context,
@@ -61,7 +62,12 @@ class TimelinePickerView @JvmOverloads constructor(
 
                 //滚动模式自动定位到可以选择的部分
                 if (scrollable) {
-                    scrollX = start.toMinutes()
+                    //开始时间前三十分钟
+                    val thirtyMinBeforeStart = SimpleTime.fromMinutes(start.toMinutes() - 60)
+                    //如果比availableRange早则，定位在scrollX = 0
+                    val maxScrollX =
+                        max(timeRangeToRect(thirtyMinBeforeStart..start).left.roundToInt(), 0)
+                    scrollX = maxScrollX
                 }
             }
     }
