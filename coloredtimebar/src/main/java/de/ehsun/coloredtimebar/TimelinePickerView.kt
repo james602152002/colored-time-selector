@@ -4,10 +4,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Rect
+import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.view.VelocityTracker
 import android.view.ViewConfiguration
+import android.widget.Scroller
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
 import kotlin.math.abs
@@ -37,6 +40,14 @@ class TimelinePickerView @JvmOverloads constructor(
 
     private var prevX = 0f
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+    private val mFling by lazy { Scroller(context, null, false) }
+    private var vTracker: VelocityTracker? = null
+    private val mMaximumVelocity by lazy { ViewConfiguration.get(context).scaledMaximumFlingVelocity.toFloat() }
+    private val mMinimumVelocity by lazy { ViewConfiguration.get(context).scaledMinimumFlingVelocity }
+    private val timeRangeRect = RectF()
+
+    //是否选择时间，选择时间模式停止Fling
+    private var isMovingHandle = false
 
     init {
         attrs?.let {
@@ -210,8 +221,18 @@ class TimelinePickerView @JvmOverloads constructor(
         val touchX = scrollX + event.x
 //        val hourCount = (timeRange.endInclusive - timeRange.start).toSeconds() / 3600
 //        val totalWidth = width * hourCount / 4
+        if (vTracker == null) {
+            vTracker = VelocityTracker.obtain()
+        }
+        vTracker?.addMovement(event)
+
         return when (event.action) {
             MotionEvent.ACTION_DOWN -> {
+                if (!mFling.isFinished) {
+                    mFling.abortAnimation()
+                }
+                isMovingHandle = false
+
                 scrollJob?.cancel()
                 prevX = event.x
                 val pos = xToPosConverter(touchX)
@@ -288,6 +309,18 @@ class TimelinePickerView @JvmOverloads constructor(
                 true
             }
             MotionEvent.ACTION_UP -> {
+                vTracker?.apply {
+                    computeCurrentVelocity(1000, mMaximumVelocity)
+                    val velocityX = xVelocity
+                    val currentVelocity = abs(velocityX.roundToInt())
+                    if (!isMovingHandle && currentVelocity > mMinimumVelocity) {
+                        timeRangeRect.set(timeRangeToRect(timeRange))
+                        mFling.fling(scrollX, 0, -velocityX.roundToInt(), 0, 0, width * 2, 0, 0)
+                    }
+                    recycle()
+                    vTracker = null
+                }
+
                 //in scrollView when touch out of range then trigger cancel event
                 if (event.x.toInt() in 0..width && event.y.toInt() in 0..height) {
                     scrollJob?.cancel()
@@ -308,6 +341,19 @@ class TimelinePickerView @JvmOverloads constructor(
         }
     }
 
+    override fun computeScroll() {
+        if (!mFling.isFinished) {
+            val rightBound = (timeRangeRect.right - width + timeRangeRect.left).toInt()
+            //超越边界停止滚动
+            scrollX = when (val currentX = mFling.currX) {
+                in 0..rightBound -> currentX
+                in Int.MIN_VALUE..0 -> 0
+                else -> rightBound
+            }
+            mFling.computeScrollOffset()
+        }
+    }
+
     private fun decideWhetherScrollDir(eventX: Float, scrollImpl: (offset: Int) -> Unit) {
         val scrollableBlock = width / 10
         val dx = width / 200
@@ -320,9 +366,14 @@ class TimelinePickerView @JvmOverloads constructor(
             }
             else -> scrollJob?.cancel()
         }
+        isMovingHandle = true
     }
 
-    private fun startScroll(eventX: Float, dx: Int, scrollImpl: (offset: Int) -> Unit) {
+    private inline fun startScroll(
+        eventX: Float,
+        dx: Int,
+        crossinline scrollImpl: (offset: Int) -> Unit
+    ) {
         scrollJob?.cancel()
         scrollJob = CoroutineScope(Dispatchers.Default).launch {
             while (true) {
@@ -339,6 +390,10 @@ class TimelinePickerView @JvmOverloads constructor(
                 }
             }
         }
+    }
+
+    fun invokeSelectedTimeRangeChanged() {
+        highlightRange?.let { onSelectedTimeRangeChanged?.invoke(it.start, it.endInclusive) }
     }
 
     private fun setLeftHandle(newValue: Int) {

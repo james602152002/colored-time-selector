@@ -12,8 +12,8 @@ android {
         applicationId "de.ehsun.smartbooking"
         minSdkVersion 19
         targetSdkVersion sdk
-        versionCode 19
-        versionName "1.1.6"
+        versionCode 20
+        versionName "1.1.7"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         multiDexEnabled true
