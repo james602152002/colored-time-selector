@@ -4,17 +4,19 @@ plugins {
     id 'kotlin-kapt'
 }
 
+apply from: "../gradle_scripts/base_android.gradle"
+
 android {
     namespace "de.ehsun.smartbooking"
-    Integer sdk = 33
-    compileSdkVersion sdk
+//    Integer sdk = 33
+//    compileSdkVersion sdk
     defaultConfig {
         applicationId "de.ehsun.smartbooking"
-        minSdkVersion 19
-        targetSdkVersion sdk
-        versionCode 23
-        versionName "1.2.1"
-        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+//        minSdkVersion 19
+//        targetSdkVersion sdk
+//        versionCode 23
+//        versionName "1.2.1"
+//        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         multiDexEnabled true
     }
@@ -50,21 +52,21 @@ android {
         buildConfig = true
         viewBinding true
     }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-
-    kotlin {
-        jvmToolchain {
-            languageVersion.set(JavaLanguageVersion.of(17))
-        }
-    }
-
-    kotlinOptions {
-        jvmTarget = '17'
-    }
+//
+//    compileOptions {
+//        sourceCompatibility JavaVersion.VERSION_17
+//        targetCompatibility JavaVersion.VERSION_17
+//    }
+//
+//    kotlin {
+//        jvmToolchain {
+//            languageVersion.set(JavaLanguageVersion.of(17))
+//        }
+//    }
+//
+//    kotlinOptions {
+//        jvmTarget = '17'
+//    }
 }
 
 dependencies {

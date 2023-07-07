@@ -1,0 +1,33 @@
+android {
+    Integer sdk = 33
+    compileSdkVersion sdk
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion sdk
+        versionCode 24
+        versionName "1.2.2"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlin {
+        jvmToolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+}
+
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
