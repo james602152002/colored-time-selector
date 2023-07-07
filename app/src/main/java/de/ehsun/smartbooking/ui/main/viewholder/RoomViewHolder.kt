@@ -8,7 +8,7 @@ import com.squareup.picasso.Picasso
 import de.ehsun.smartbooking.R
 import de.ehsun.smartbooking.entities.Room
 import de.ehsun.smartbooking.utils.extension.dp2px
-import kotlinx.android.synthetic.main.list_item_room_item.view.*
+//import kotlinx.android.synthetic.main.list_item_room_item.view.*
 
 class RoomViewHolder private constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -24,20 +24,20 @@ class RoomViewHolder private constructor(itemView: View) : RecyclerView.ViewHold
 
     fun onBindView(room: Room) {
         with(itemView) {
-            roomNameTextView.text = context.getString(R.string.room_number, room.name)
-            roomSizeTextView.text = context.getString(R.string.room_size, room.size)
-
-            Picasso.Builder(context).build()
-                    .load(room.images[0])
-                    .placeholder(R.drawable.ic_photo_24dp)
-                    .error(R.drawable.ic_photo_24dp)
-                    .resize(context.dp2px(88f).toInt(), context.dp2px(88f).toInt())
-                    .centerCrop()
-                    .into(roomPicImageView)
-
-            timelineView.setAvailableTimeRange(room.available)
-
-            roomContainer.setOnClickListener { roomListener?.onRoomClick(room) }
+//            roomNameTextView.text = context.getString(R.string.room_number, room.name)
+//            roomSizeTextView.text = context.getString(R.string.room_size, room.size)
+//
+//            Picasso.Builder(context).build()
+//                    .load(room.images[0])
+//                    .placeholder(R.drawable.ic_photo_24dp)
+//                    .error(R.drawable.ic_photo_24dp)
+//                    .resize(context.dp2px(88f).toInt(), context.dp2px(88f).toInt())
+//                    .centerCrop()
+//                    .into(roomPicImageView)
+//
+//            timelineView.setAvailableTimeRange(room.available)
+//
+//            roomContainer.setOnClickListener { roomListener?.onRoomClick(room) }
         }
     }
 

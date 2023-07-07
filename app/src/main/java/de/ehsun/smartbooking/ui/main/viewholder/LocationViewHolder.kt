@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import de.ehsun.smartbooking.R
-import kotlinx.android.synthetic.main.list_item_location_item.view.*
+//import kotlinx.android.synthetic.main.list_item_location_item.view.*
 
 class LocationViewHolder private constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -18,7 +18,7 @@ class LocationViewHolder private constructor(itemView: View) : RecyclerView.View
 
     fun onBindView(title: String) {
         with(itemView) {
-            locationName.text = title
+//            locationName.text = title
         }
     }
 

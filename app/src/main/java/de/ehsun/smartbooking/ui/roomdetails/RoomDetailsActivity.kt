@@ -19,8 +19,8 @@ import de.ehsun.smartbooking.ui.roomdetails.adapter.AttendeeAdapter
 import de.ehsun.smartbooking.ui.roomdetails.adapter.EquipmentAdapter
 import de.ehsun.smartbooking.ui.roomdetails.adapter.ImageSliderAdapter
 import de.ehsun.smartbooking.utils.ValidationUtil
-import kotlinx.android.synthetic.main.activity_room_details.*
-import kotlinx.android.synthetic.main.view_submit_event.*
+//import kotlinx.android.synthetic.main.activity_room_details.*
+//import kotlinx.android.synthetic.main.view_submit_event.*
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -84,35 +84,35 @@ class RoomDetailsActivity : BaseActivity(),
         equipmentAdapter = EquipmentAdapter()
         attendeeAdapter = AttendeeAdapter(this)
 
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayShowHomeEnabled(true)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        showRooms()
-
-        val equipmentLayoutManager =
-            LinearLayoutManager(
-                this,
-                LinearLayoutManager.HORIZONTAL,
-                false
-            )
-        equipmentRecyclerView.layoutManager = equipmentLayoutManager
-        equipmentRecyclerView.adapter = equipmentAdapter
-
-        val attendeeLayoutManager =
-            LinearLayoutManager(this)
-        attendeesRecyclerView.layoutManager = attendeeLayoutManager
-        attendeesRecyclerView.adapter = attendeeAdapter
-
-        addAttendeeButton.setOnClickListener { _ ->
-            presenter.onAddAttendeeRequested(
-                attendeeNameEditText.text.toString(),
-                attendeeEmailEditText.text.toString(),
-                attendeePhoneEditText.text.toString()
-            )
-        }
-        submitButton.setOnClickListener {
-            showSubmitDialog()
-        }
+//        setSupportActionBar(toolbar)
+//        supportActionBar?.setDisplayShowHomeEnabled(true)
+//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+//        showRooms()
+//
+//        val equipmentLayoutManager =
+//            LinearLayoutManager(
+//                this,
+//                LinearLayoutManager.HORIZONTAL,
+//                false
+//            )
+//        equipmentRecyclerView.layoutManager = equipmentLayoutManager
+//        equipmentRecyclerView.adapter = equipmentAdapter
+//
+//        val attendeeLayoutManager =
+//            LinearLayoutManager(this)
+//        attendeesRecyclerView.layoutManager = attendeeLayoutManager
+//        attendeesRecyclerView.adapter = attendeeAdapter
+//
+//        addAttendeeButton.setOnClickListener { _ ->
+//            presenter.onAddAttendeeRequested(
+//                attendeeNameEditText.text.toString(),
+//                attendeeEmailEditText.text.toString(),
+//                attendeePhoneEditText.text.toString()
+//            )
+//        }
+//        submitButton.setOnClickListener {
+//            showSubmitDialog()
+//        }
         presenter.onViewInitialized()
     }
 
@@ -125,18 +125,18 @@ class RoomDetailsActivity : BaseActivity(),
         submitDialog?.setCanceledOnTouchOutside(false)
 
         submitDialog?.setOnShowListener {
-            submitDialog?.submitEventButton?.setOnClickListener {
-                bookingInfo.attendees = listOfAttendees
-                bookingInfo.booking.date = intent.currentDate / 1000L
-                bookingInfo.booking.room = intent.room?.name ?: ""
-                bookingInfo.booking.title = submitDialog?.eventTitleEditText?.text.toString()
-                bookingInfo.booking.description =
-                    submitDialog?.eventDescriptionEditText?.text.toString()
-                bookingInfo.booking.startTime = timelinePicker.selectedTimeRange.start.toTimeStamp()
-                bookingInfo.booking.endTime =
-                    timelinePicker.selectedTimeRange.endInclusive.toTimeStamp()
-                presenter.onSubmitBookingRequested(bookingInfo)
-            }
+//            submitDialog?.submitEventButton?.setOnClickListener {
+//                bookingInfo.attendees = listOfAttendees
+//                bookingInfo.booking.date = intent.currentDate / 1000L
+//                bookingInfo.booking.room = intent.room?.name ?: ""
+//                bookingInfo.booking.title = submitDialog?.eventTitleEditText?.text.toString()
+//                bookingInfo.booking.description =
+//                    submitDialog?.eventDescriptionEditText?.text.toString()
+//                bookingInfo.booking.startTime = timelinePicker.selectedTimeRange.start.toTimeStamp()
+//                bookingInfo.booking.endTime =
+//                    timelinePicker.selectedTimeRange.endInclusive.toTimeStamp()
+//                presenter.onSubmitBookingRequested(bookingInfo)
+//            }
         }
         submitDialog?.show()
     }
@@ -144,17 +144,17 @@ class RoomDetailsActivity : BaseActivity(),
     private fun showRooms() {
         val room = intent.room
         title = getString(R.string.room_number, room?.name)
-        roomNameTextView.text =
-            getString(R.string.room_number_and_floor, room?.name, room?.location)
-        equipmentAdapter.set(room?.equipment ?: mutableListOf())
-        sizeTextView.text = getString(R.string.room_capacity_text_view, room?.size, room?.capacity)
-        imageViewPager.adapter = ImageSliderAdapter(this, room?.images ?: mutableListOf())
-//        timelinePicker.setAvailableTimeRange(room?.available ?: mutableListOf())
-        timelinePicker.setAvailableTimeRange(mutableListOf("10:00-11:00","14:00-15:00", "18:00-20:00"))
-        timelinePicker.setOnSelectedTimeRangeChangedListener { from, to ->
-            selectedTimeTextView.text = getString(R.string.from_to, from.format(), to.format())
-        }
-//        indicator.setViewPager(imageViewPager)
+//        roomNameTextView.text =
+//            getString(R.string.room_number_and_floor, room?.name, room?.location)
+//        equipmentAdapter.set(room?.equipment ?: mutableListOf())
+//        sizeTextView.text = getString(R.string.room_capacity_text_view, room?.size, room?.capacity)
+//        imageViewPager.adapter = ImageSliderAdapter(this, room?.images ?: mutableListOf())
+////        timelinePicker.setAvailableTimeRange(room?.available ?: mutableListOf())
+//        timelinePicker.setAvailableTimeRange(mutableListOf("10:00-11:00","14:00-15:00", "18:00-20:00"))
+//        timelinePicker.setOnSelectedTimeRangeChangedListener { from, to ->
+//            selectedTimeTextView.text = getString(R.string.from_to, from.format(), to.format())
+//        }
+////        indicator.setViewPager(imageViewPager)
     }
 
     override fun showSuccessfulMessage(bookingResult: BookingResult) {
@@ -171,11 +171,11 @@ class RoomDetailsActivity : BaseActivity(),
     }
 
     override fun showLoading() {
-        loadingContainer.visibility = View.VISIBLE
+//        loadingContainer.visibility = View.VISIBLE
     }
 
     override fun hideLoading() {
-        loadingContainer.visibility = View.GONE
+//        loadingContainer.visibility = View.GONE
     }
 
     override fun showInvalidSubmitRequest() {
@@ -190,26 +190,26 @@ class RoomDetailsActivity : BaseActivity(),
     }
 
     override fun showInvalidAttendeeFieldValues() {
-        val isNameValid = !TextUtils.isEmpty(attendeeNameEditText.text.toString())
-        val isPhoneValid = !TextUtils.isEmpty(attendeePhoneEditText.text.toString())
-        val isEmailValid = ValidationUtil.isValidEmail(attendeeEmailEditText.text.toString())
-
-        attendeeNameEditText.error = null
-        attendeePhoneEditText.error = null
-        attendeeEmailEditText.error = null
-
-        if (!isNameValid) {
-            attendeeNameEditText.error = getString(R.string.error_invalid_name)
-            return
-        }
-        if (!isEmailValid) {
-            attendeeEmailEditText.error = getString(R.string.error_invalid_email)
-            return
-        }
-        if (!isPhoneValid) {
-            attendeePhoneEditText.error = getString(R.string.error_invalid_phone)
-            return
-        }
+//        val isNameValid = !TextUtils.isEmpty(attendeeNameEditText.text.toString())
+//        val isPhoneValid = !TextUtils.isEmpty(attendeePhoneEditText.text.toString())
+//        val isEmailValid = ValidationUtil.isValidEmail(attendeeEmailEditText.text.toString())
+//
+//        attendeeNameEditText.error = null
+//        attendeePhoneEditText.error = null
+//        attendeeEmailEditText.error = null
+//
+//        if (!isNameValid) {
+//            attendeeNameEditText.error = getString(R.string.error_invalid_name)
+//            return
+//        }
+//        if (!isEmailValid) {
+//            attendeeEmailEditText.error = getString(R.string.error_invalid_email)
+//            return
+//        }
+//        if (!isPhoneValid) {
+//            attendeePhoneEditText.error = getString(R.string.error_invalid_phone)
+//            return
+//        }
     }
 
     override fun addAttendee(attendee: Attendee) {

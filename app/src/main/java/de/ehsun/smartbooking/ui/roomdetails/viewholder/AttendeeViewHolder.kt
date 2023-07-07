@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import de.ehsun.smartbooking.R
 import de.ehsun.smartbooking.entities.Attendee
-import kotlinx.android.synthetic.main.list_item_attendee_item.view.*
+//import kotlinx.android.synthetic.main.list_item_attendee_item.view.*
 
 class AttendeeViewHolder private constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -22,9 +22,9 @@ class AttendeeViewHolder private constructor(itemView: View) : RecyclerView.View
 
     fun onBindView(attendee: Attendee) {
         with(itemView) {
-            attendeeNameTextView.text = attendee.name
-            attendeeRemoveImageView.setOnClickListener { attendeeListener?.onCloseClick(attendee) }
-            attendeeContainer.setOnClickListener { attendeeListener?.onAttendeeClick(attendee) }
+//            attendeeNameTextView.text = attendee.name
+//            attendeeRemoveImageView.setOnClickListener { attendeeListener?.onCloseClick(attendee) }
+//            attendeeContainer.setOnClickListener { attendeeListener?.onAttendeeClick(attendee) }
         }
     }
 

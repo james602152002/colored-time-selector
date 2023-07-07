@@ -34,12 +34,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center_vertical"
                 android:padding="@dimen/spacing_normal"
-                app:centered="true"
-                app:fillColor="@color/colorAccent"
                 app:layout_collapseMode="parallax"
-                app:layout_collapseParallaxMultiplier="0.8"
-                app:pageColor="@color/colorGrey900"
-                app:snap="true" />
+                app:layout_collapseParallaxMultiplier="0.8" />
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -203,9 +199,9 @@
                             android:layout_gravity="end"
                             android:layout_marginTop="@dimen/spacing_large"
                             android:backgroundTint="@color/colorAccent"
-                            android:paddingBottom="@dimen/spacing_normal"
-                            android:paddingEnd="@dimen/spacing_large"
                             android:paddingStart="@dimen/spacing_large"
+                            android:paddingEnd="@dimen/spacing_large"
+                            android:paddingBottom="@dimen/spacing_normal"
                             android:text="@string/add"
                             android:textColor="@color/colorWhite" />
                     </LinearLayout>
@@ -222,8 +218,8 @@
                     android:layout_height="wrap_content"
                     android:layout_toEndOf="@id/centerDivider"
                     android:orientation="vertical"
-                    android:paddingEnd="@dimen/spacing_normal"
-                    android:paddingStart="@dimen/spacing_normal">
+                    android:paddingStart="@dimen/spacing_normal"
+                    android:paddingEnd="@dimen/spacing_normal">
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/attendeesRecyclerView"
@@ -243,10 +239,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="@color/colorAccent"
-        android:paddingBottom="@dimen/spacing_normal"
-        android:paddingEnd="@dimen/spacing_large"
         android:paddingStart="@dimen/spacing_large"
         android:paddingTop="@dimen/spacing_normal"
+        android:paddingEnd="@dimen/spacing_large"
+        android:paddingBottom="@dimen/spacing_normal"
         android:text="@string/submit"
         android:textColor="@color/colorWhite"
         android:textSize="@dimen/text_size_large"

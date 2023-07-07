@@ -2,18 +2,18 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-kapt'
-    id 'kotlin-android-extensions'
 }
 
 android {
-    Integer sdk = 31
+    namespace "de.ehsun.smartbooking"
+    Integer sdk = 33
     compileSdkVersion sdk
     defaultConfig {
         applicationId "de.ehsun.smartbooking"
         minSdkVersion 19
         targetSdkVersion sdk
-        versionCode 22
-        versionName "1.2.0"
+        versionCode 23
+        versionName "1.2.1"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         multiDexEnabled true
@@ -44,6 +44,26 @@ android {
         androidTest {
             java.srcDir sharedTestDir
         }
+    }
+
+    buildFeatures {
+        buildConfig = true
+        viewBinding true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlin {
+        jvmToolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
     }
 }
 
@@ -76,17 +96,27 @@ dependencies {
 //    implementation "com.jakewharton.picasso:picasso2-okhttp3-downloader:$rootProject.ext.picassoOkHttp"
 
     //Support Library
-    implementation 'androidx.appcompat:appcompat:1.4.0'
-    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.core:core-ktx:1.10.1'
 
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01'
     implementation 'androidx.multidex:multidex:2.0.1'
 
     //Dagger 2
-    implementation "com.google.dagger:dagger:$rootProject.ext.daggerVersion"
-    kapt "com.google.dagger:dagger-compiler:$rootProject.ext.daggerVersion"
+//    implementation "com.google.dagger:dagger:$rootProject.ext.daggerVersion"
+//    kapt "com.google.dagger:dagger-compiler:2.44.2"
+
+    def daggerProcesser = "com.google.dagger:dagger-android-processor:2.44.2"
+//    dagger_android       : [group: 'com.google.dagger', name: 'dagger-android', version: versions.daggerLibVersion],
+//    dagger_support       : [group: 'com.google.dagger', name: 'dagger-android-support', version: versions.daggerLibVersion],
+//    dagger_compiler      : [group: 'com.google.dagger', name: 'dagger-compiler', version: versions.daggerLibVersion],
+    implementation "com.google.dagger:dagger-android:2.44.2"
+    implementation "com.google.dagger:dagger-android-support:2.44.2"
+    kapt "com.google.dagger:dagger-compiler:2.44.2"
+    kapt daggerProcesser
+    annotationProcessor daggerProcesser
 
     //JodaTime
     implementation "net.danlew:android.joda:$rootProject.ext.jodaTimeVersion"

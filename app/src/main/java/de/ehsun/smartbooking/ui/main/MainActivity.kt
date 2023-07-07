@@ -20,8 +20,8 @@ import de.ehsun.smartbooking.ui.base.BaseActivity
 import de.ehsun.smartbooking.ui.main.adapter.RoomAdapter
 import de.ehsun.smartbooking.ui.roomdetails.RoomDetailsActivity
 import de.ehsun.smartbooking.utils.extension.afterTextChanged
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.popup_filter.view.*
+//import kotlinx.android.synthetic.main.activity_main.*
+//import kotlinx.android.synthetic.main.popup_filter.view.*
 import org.joda.time.DateTime
 import java.util.*
 import javax.inject.Inject
@@ -70,9 +70,9 @@ class MainActivity : BaseActivity(), MainContract.View, PopupMenu.OnMenuItemClic
         val layoutManager =
             LinearLayoutManager(this)
         findViewById<View>(R.id.filterViewGroup).setOnClickListener({ showFilterPopup(findViewById(R.id.app_bar_layout)) })
-        swipeRefreshContainer.setOnRefreshListener({ presenter.onRefreshBooks() })
-        booksRecyclerView.layoutManager = layoutManager
-        booksRecyclerView.adapter = adapter
+//        swipeRefreshContainer.setOnRefreshListener({ presenter.onRefreshBooks() })
+//        booksRecyclerView.layoutManager = layoutManager
+//        booksRecyclerView.adapter = adapter
 
         presenter.onViewInitialized()
     }
@@ -80,28 +80,28 @@ class MainActivity : BaseActivity(), MainContract.View, PopupMenu.OnMenuItemClic
     private fun initDatePicker() {
         currentDate = DateTime.now()
         displayDate(currentDate)
-        previousDateImageButton.setOnClickListener {
-            currentDate = currentDate.minusDays(1)
-            displayDate(currentDate)
-
-        }
-        nextDateImageButton.setOnClickListener {
-            currentDate = currentDate.plusDays(1)
-            displayDate(currentDate)
-        }
-        currentDateTextView.afterTextChanged { presenter.onDateChanged(currentDate.millis) }
-        currentDateTextView.setOnClickListener {
-            DatePickerDialog(this, date,
-                    calendar.get(Calendar.YEAR),
-                    calendar.get(Calendar.MONTH),
-                    calendar.get((Calendar.DAY_OF_MONTH)))
-                    .show()
-        }
+//        previousDateImageButton.setOnClickListener {
+//            currentDate = currentDate.minusDays(1)
+//            displayDate(currentDate)
+//
+//        }
+//        nextDateImageButton.setOnClickListener {
+//            currentDate = currentDate.plusDays(1)
+//            displayDate(currentDate)
+//        }
+//        currentDateTextView.afterTextChanged { presenter.onDateChanged(currentDate.millis) }
+//        currentDateTextView.setOnClickListener {
+//            DatePickerDialog(this, date,
+//                    calendar.get(Calendar.YEAR),
+//                    calendar.get(Calendar.MONTH),
+//                    calendar.get((Calendar.DAY_OF_MONTH)))
+//                    .show()
+//        }
     }
 
     private fun displayDate(dateTime: DateTime) {
         currentDate = dateTime
-        currentDateTextView.text = dateTime.toLocalDate().toString()
+//        currentDateTextView.text = dateTime.toLocalDate().toString()
     }
 
     override fun onMenuItemClick(item: MenuItem?) = when (item?.itemId) {
@@ -139,34 +139,34 @@ class MainActivity : BaseActivity(), MainContract.View, PopupMenu.OnMenuItemClic
 
     @SuppressLint("InflateParams")
     private fun showFilterPopup(v: ViewGroup) {
-        val popupWindow = this.filterPopupWindow ?: layoutInflater.inflate(R.layout.popup_filter, null).run {
-            val popupWindow = PopupWindow(
-                    this,
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            popupWindow.isOutsideTouchable = true
-            if (Build.VERSION.SDK_INT >= 21) {
-                popupWindow.elevation = 8.0f
-            }
-
-            filterByNameTextBox.afterTextChanged { presenter.onAddOrRemoveFilter(it) }
-            isAvailableCheckbox.setOnCheckedChangeListener { _, checked -> presenter.onAddOrRemoveIsAvailableFilter(checked) }
-            popupWindow
-        }
-
-        val bookFilter = presenter.getCurrentBookFilter()
-        with(popupWindow) {
-            contentView.filterByNameTextBox.setText(bookFilter.name)
-            contentView.isAvailableCheckbox.isChecked = bookFilter.isAvailable
-            isFocusable = true
-            update()
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            popupWindow.showAsDropDown(v, Gravity.BOTTOM, 0, 0)
-        } else {
-            popupWindow.showAsDropDown(v, 0, 0)
-        }
+//        val popupWindow = this.filterPopupWindow ?: layoutInflater.inflate(R.layout.popup_filter, null).run {
+//            val popupWindow = PopupWindow(
+//                    this,
+//                    ViewGroup.LayoutParams.MATCH_PARENT,
+//                    ViewGroup.LayoutParams.WRAP_CONTENT
+//            )
+//            popupWindow.isOutsideTouchable = true
+//            if (Build.VERSION.SDK_INT >= 21) {
+//                popupWindow.elevation = 8.0f
+//            }
+//
+//            filterByNameTextBox.afterTextChanged { presenter.onAddOrRemoveFilter(it) }
+//            isAvailableCheckbox.setOnCheckedChangeListener { _, checked -> presenter.onAddOrRemoveIsAvailableFilter(checked) }
+//            popupWindow
+//        }
+//
+//        val bookFilter = presenter.getCurrentBookFilter()
+//        with(popupWindow) {
+//            contentView.filterByNameTextBox.setText(bookFilter.name)
+//            contentView.isAvailableCheckbox.isChecked = bookFilter.isAvailable
+//            isFocusable = true
+//            update()
+//        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+//            popupWindow.showAsDropDown(v, Gravity.BOTTOM, 0, 0)
+//        } else {
+//            popupWindow.showAsDropDown(v, 0, 0)
+//        }
     }
 
     override fun onRoomItemClick(room: Room) {
@@ -179,11 +179,11 @@ class MainActivity : BaseActivity(), MainContract.View, PopupMenu.OnMenuItemClic
     }
 
     override fun showLoading() {
-        loadingContainer.visibility = View.VISIBLE
+//        loadingContainer.visibility = View.VISIBLE
     }
 
     override fun hideLoading() {
-        loadingContainer.visibility = View.GONE
-        swipeRefreshContainer.isRefreshing = false
+//        loadingContainer.visibility = View.GONE
+//        swipeRefreshContainer.isRefreshing = false
     }
 }
