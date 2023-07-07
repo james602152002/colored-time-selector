@@ -40,6 +40,7 @@ task androidJavadocs(type: Javadoc) {
 }
 ext{
     //Libraries Version
+    kotlin_version = '1.8.20'
     supportLibrariesVersion = '27.0.2'
     rxAndroidVersion = '2.1.1'
 //    rxJavaVersion = '2.1.5'
