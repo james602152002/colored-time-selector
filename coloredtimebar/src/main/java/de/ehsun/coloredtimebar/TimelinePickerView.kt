@@ -54,6 +54,9 @@ class TimelinePickerView @JvmOverloads constructor(
     //是否选择时间，选择时间模式停止Fling
     private var isMovingHandle = false
 
+    private var occupiedDown: ModelOccupied? = null
+    private var occupiedUp: ModelOccupied? = null
+
     init {
         attrs?.let {
             val typedArray =
@@ -250,6 +253,18 @@ class TimelinePickerView @JvmOverloads constructor(
                 prevX = event.x
                 val pos = xToPosConverter(touchX)
 
+                occupiedDown = null
+                occupiedUp = null
+
+                occupiedDown = occupiedModelRanges.find {
+                    val start = it.timeRange?.start?.toMinutes()
+                    val end = it.timeRange?.endInclusive?.toMinutes()
+                    when {
+                        start != null && end != null -> pos in start..end
+                        else -> false
+                    }
+                }
+
 //                occupiedRanges
 
                 // consider touchX is closed to pickerPos then select picker handle to scroll, else decide downX to scroll
@@ -342,6 +357,23 @@ class TimelinePickerView @JvmOverloads constructor(
                     recycle()
                     vTracker = null
                 }
+
+                if (occupiedDown != null) {
+                    val pos = xToPosConverter(touchX)
+                    occupiedUp = occupiedModelRanges.find {
+                        val start = it.timeRange?.start?.toMinutes()
+                        val end = it.timeRange?.endInclusive?.toMinutes()
+                        when {
+                            start != null && end != null -> pos in start..end
+                            else -> false
+                        }
+                    }
+                    if (occupiedDown == occupiedUp) {
+                        occupiedDown?.onClick?.invoke()
+                    }
+                }
+                occupiedUp = null
+                occupiedDown = null
 
                 //in scrollView when touch out of range then trigger cancel event
                 if (event.x.toInt() in 0..width && event.y.toInt() in 0..height) {

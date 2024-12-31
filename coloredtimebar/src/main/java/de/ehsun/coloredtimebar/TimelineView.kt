@@ -34,6 +34,7 @@ open class TimelineView : View {
     var barColorHighlight: Int by invalidateOnChange((0xFFE42030).toInt())
     var availableRanges: List<ClosedRange<SimpleTime>> by invalidateOnChange(listOf())
     var occupiedRanges: List<ClosedRange<SimpleTime>> by invalidateOnChange(listOf())
+    var occupiedModelRanges: List<ModelOccupied> by invalidateOnChange(listOf())
     var highlightRange: ClosedRange<SimpleTime>? by redrawOnChange(null)
 
     var fractionPrimaryTextColor: Int by invalidateOnChange((0xFF333333).toInt())
@@ -173,8 +174,13 @@ open class TimelineView : View {
     /**
      * 占用时间
      * */
-    open fun setOccupiedTimeRange(occupiedTimeRanges: List<String>) {
-        occupiedRanges = occupiedTimeRanges.mapNotNull { parseTimeRange(it) }
+    open fun setOccupiedTimeRange(newOccupiedTimeRanges: List<ModelOccupied>) {
+        this.occupiedModelRanges = newOccupiedTimeRanges
+        occupiedRanges = newOccupiedTimeRanges.mapNotNull { model ->
+            val timeRange = model.time?.let { parseTimeRange(it) }
+            model.timeRange = timeRange
+            timeRange
+        }
     }
 
     open fun setHighlightTimeRange(timeRange: String) {
@@ -233,9 +239,30 @@ open class TimelineView : View {
         }
 
         //占用时间
-        occupiedRanges.map { range -> timeRangeToRect.invoke(range) }.forEach { rect ->
-            barPaint.color = barColorHighlight
-            canvas.drawRect(rect, Paint().apply { color = Color.RED })
+        occupiedRanges.forEach { range ->
+            val rect = timeRangeToRect.invoke(range)
+            occupiedModelRanges.find { it.timeRange == range }?.let { modelOccupied ->
+                canvas.drawRect(rect, Paint().apply {
+                    color = modelOccupied.color
+                })
+                modelOccupied.text?.let { content ->
+                    val centerX = rect.centerX()
+                    val centerY = rect.centerY()
+                    val fontSize = min(rect.width(), rect.height()) / 5f
+                    val texts = content.split("\n")
+
+                    texts.forEachIndexed { index, text ->
+                        canvas.drawText(
+                            text,
+                            centerX - fontSize * text.length / 2,
+                            centerY + (index * fontSize),
+                            TextPaint().apply {
+                                color = Color.WHITE
+                                textSize = fontSize
+                            })
+                    }
+                }
+            }
         }
 
         strokeItems.forEach {
