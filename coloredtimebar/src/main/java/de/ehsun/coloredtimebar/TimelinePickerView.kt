@@ -12,7 +12,12 @@ import android.view.VelocityTracker
 import android.view.ViewConfiguration
 import android.widget.Scroller
 import androidx.core.content.ContextCompat
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -21,7 +26,7 @@ class TimelinePickerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-    defStyleRes: Int = 0
+    defStyleRes: Int = 0,
 ) : TimelineView(context, attrs, defStyleAttr, defStyleRes) {
 
     var pickerDrawable: Drawable? =
@@ -78,7 +83,7 @@ class TimelinePickerView @JvmOverloads constructor(
                     //如果比availableRange早则，定位在scrollX = 0
 //                    val maxScrollX =
 //                        max(timeRangeToRect(thirtyMinBeforeStart..start).left.roundToInt(), 0)
-                    val maxScrollX =timeRangeToRect(thirtyMinBeforeStart..start).left.roundToInt()
+                    val maxScrollX = timeRangeToRect(thirtyMinBeforeStart..start).left.roundToInt()
                     timeRangeRect.set(timeRangeToRect(timeRange))
                     mFling.startScroll(scrollX, 0, maxScrollX, 0, abs(maxScrollX - scrollX))
 //                    scrollX = maxScrollX
@@ -164,6 +169,7 @@ class TimelinePickerView @JvmOverloads constructor(
                                     )
                                 )
                             }
+
                             else -> {
                                 val handle1Left =
                                     (rect.left - ((pickerDrawable?.intrinsicWidth
@@ -207,6 +213,7 @@ class TimelinePickerView @JvmOverloads constructor(
                                 drawCircle(lineX, centerY, circleRadius, linePickerCirclePaint)
                                 drawCircle(lineX, centerY, circleRadius, linePickerPaint)
                             }
+
                             else -> {
                                 pickerDrawable?.bounds = it
                                 pickerDrawable?.draw(this)
@@ -243,6 +250,8 @@ class TimelinePickerView @JvmOverloads constructor(
                 prevX = event.x
                 val pos = xToPosConverter(touchX)
 
+//                occupiedRanges
+
                 // consider touchX is closed to pickerPos then select picker handle to scroll, else decide downX to scroll
                 if (highlightRange != null) {
                     val movingHandlerLimit = width / 20f
@@ -262,6 +271,7 @@ class TimelinePickerView @JvmOverloads constructor(
                                 }
                             }
                         }
+
                         else -> {
                             when (abs(handleRightPos - pos) <= movingHandlerLimit) {
                                 true -> TimelineHandle.RIGHT
@@ -286,6 +296,7 @@ class TimelinePickerView @JvmOverloads constructor(
                 }
                 true
             }
+
             MotionEvent.ACTION_MOVE -> {
                 parent.requestDisallowInterceptTouchEvent(true)
                 val pos = xToPosConverter(touchX)
@@ -295,10 +306,12 @@ class TimelinePickerView @JvmOverloads constructor(
                         setLeftHandle(pos)
                         decideWhetherScrollDir(moveX, this::setLeftHandle)
                     }
+
                     TimelineHandle.RIGHT -> {
                         setRightHandle(pos)
                         decideWhetherScrollDir(moveX, this::setRightHandle)
                     }
+
                     else -> {
                         // scrolling
                         if (abs(prevX - moveX) > touchSlop) {
@@ -316,6 +329,7 @@ class TimelinePickerView @JvmOverloads constructor(
                 }
                 true
             }
+
             MotionEvent.ACTION_UP -> {
                 vTracker?.apply {
                     computeCurrentVelocity(1000, mMaximumVelocity)
@@ -369,9 +383,11 @@ class TimelinePickerView @JvmOverloads constructor(
             in 0..scrollableBlock -> startScroll(eventX, -dx) { posOffset ->
                 scrollImpl(posOffset)
             }
+
             in (width - scrollableBlock)..width -> startScroll(eventX, dx) { posOffset ->
                 scrollImpl(posOffset)
             }
+
             else -> scrollJob?.cancel()
         }
         isMovingHandle = true
@@ -380,7 +396,7 @@ class TimelinePickerView @JvmOverloads constructor(
     private inline fun startScroll(
         eventX: Float,
         dx: Int,
-        crossinline scrollImpl: (offset: Int) -> Unit
+        crossinline scrollImpl: (offset: Int) -> Unit,
     ) {
         scrollJob?.cancel()
         scrollJob = CoroutineScope(Dispatchers.Default).launch {

@@ -1,14 +1,20 @@
 package de.ehsun.coloredtimebar
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.PointF
+import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Build
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.RequiresApi
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
 
@@ -27,6 +33,7 @@ open class TimelineView : View {
     var barColorNotAvailable: Int by invalidateOnChange((0xFFE42030).toInt())
     var barColorHighlight: Int by invalidateOnChange((0xFFE42030).toInt())
     var availableRanges: List<ClosedRange<SimpleTime>> by invalidateOnChange(listOf())
+    var occupiedRanges: List<ClosedRange<SimpleTime>> by invalidateOnChange(listOf())
     var highlightRange: ClosedRange<SimpleTime>? by redrawOnChange(null)
 
     var fractionPrimaryTextColor: Int by invalidateOnChange((0xFF333333).toInt())
@@ -87,7 +94,7 @@ open class TimelineView : View {
         context: Context,
         attrs: AttributeSet?,
         defStyleAttr: Int,
-        defStyleRes: Int
+        defStyleRes: Int,
     ) : super(
         context,
         attrs,
@@ -163,6 +170,13 @@ open class TimelineView : View {
         availableRanges = availableTimeRanges.mapNotNull { parseTimeRange(it) }
     }
 
+    /**
+     * 占用时间
+     * */
+    open fun setOccupiedTimeRange(occupiedTimeRanges: List<String>) {
+        occupiedRanges = occupiedTimeRanges.mapNotNull { parseTimeRange(it) }
+    }
+
     open fun setHighlightTimeRange(timeRange: String) {
         highlightRange = parseTimeRange(timeRange)
     }
@@ -192,14 +206,17 @@ open class TimelineView : View {
                     textPaint.color = it.color
                     canvas.drawText(it.text, it.x, it.y, textPaint)
                 }
+
                 is DrawingItem.Rectangle -> {
                     barPaint.color = it.color
                     canvas.drawRect(it.rect, barPaint)
                 }
+
                 is DrawingItem.Line -> {
                     linePaint.color = it.color
                     canvas.drawLine(it.from.x, it.from.y, it.to.x, it.to.y, linePaint)
                 }
+
                 is DrawingItem.TotalStroke -> {
                     strokeItems += it
                 }
@@ -213,6 +230,12 @@ open class TimelineView : View {
                     barPaint.color = barColorHighlight
                     canvas.drawRect(rect, barPaint)
                 }
+        }
+
+        //占用时间
+        occupiedRanges.map { range -> timeRangeToRect.invoke(range) }.forEach { rect ->
+            barPaint.color = barColorHighlight
+            canvas.drawRect(rect, Paint().apply { color = Color.RED })
         }
 
         strokeItems.forEach {
@@ -298,16 +321,17 @@ open class TimelineView : View {
             RectF(timeToX(start), mainBarTop, timeToX(end), mainBarBottom)
         }
         val rectItems = listOf(DrawingItem.Rectangle(mainBarRect, barColorNotAvailable))
-            .plus(availableRanges
-                .map {
-                    if (it.endInclusive <= timeRange.endInclusive) {
-                        timeRangeToRect.invoke(it)
-                    } else {
-                        //when rect over time range then cut last rect part
-                        timeRangeToRect.invoke(it.start..timeRange.endInclusive)
+            .plus(
+                availableRanges
+                    .map {
+                        if (it.endInclusive <= timeRange.endInclusive) {
+                            timeRangeToRect.invoke(it)
+                        } else {
+                            //when rect over time range then cut last rect part
+                            timeRangeToRect.invoke(it.start..timeRange.endInclusive)
+                        }
                     }
-                }
-                .map { DrawingItem.Rectangle(it, barColorAvailable) }
+                    .map { DrawingItem.Rectangle(it, barColorAvailable) }
             )
 
         val fractionTop = textHeight + 1
